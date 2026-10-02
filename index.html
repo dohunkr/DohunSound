@@ -409,11 +409,12 @@
         source.buffer = bufferToPlay;
         source.playbackRate.setValueAtTime(speed, audioCtx.currentTime);
 
+        // Sample playback with natural clean punch (matches original video 100%)
         const sampleGain = audioCtx.createGain();
-        sampleGain.gain.setValueAtTime(2.8, audioCtx.currentTime);
+        sampleGain.gain.setValueAtTime(1.8, audioCtx.currentTime);
 
         source.connect(sampleGain);
-        sampleGain.connect(bassBoostFilter);
+        sampleGain.connect(masterGain);
         source.start();
       }
 
