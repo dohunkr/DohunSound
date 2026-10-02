@@ -2,7 +2,9 @@
 <html lang="ko" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#050508">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>도헌사운드 | DohunSound - 63Hz 극저음 극한 증폭 & 초대형 우퍼 파쇄기</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -61,7 +63,11 @@
           <p class="text-xs text-red-400/90 font-medium">63Hz 이하 서브우퍼 극한 왜곡(Max Overdrive) & 10시간 스케줄러</p>
         </div>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <span id="tv-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-900 text-gray-400 border border-gray-800">
+          <span class="w-2 h-2 mr-1.5 rounded-full bg-gray-500"></span>
+          TV 정지
+        </span>
         <span id="dsp-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-900 text-gray-400 border border-gray-800">
           <span class="w-2 h-2 mr-1.5 rounded-full bg-gray-500" id="dsp-indicator"></span>
           대기 중 (IDLE)
@@ -77,7 +83,19 @@
   </div>
 
   <!-- Main Container -->
-  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
+  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
+    <!-- Engine Tabs (쿵 / TV 따로따로) -->
+    <div class="flex gap-2 mb-6">
+      <button id="tab-kung" class="flex-1 py-3 px-4 rounded-xl font-black text-sm bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-xl shadow-red-950 border border-red-500 transition active:scale-[0.98]">
+        🔊 쿵 10시간 (단발 스케줄)
+      </button>
+      <button id="tab-tv" class="flex-1 py-3 px-4 rounded-xl font-black text-sm bg-[#1c0808] text-red-200/70 border border-red-900 transition active:scale-[0.98] hover:bg-[#2b1010]">
+        📺 TV 10시간 (63Hz 오버드라이브)
+      </button>
+    </div>
+
+    <!-- Kung View -->
+    <div id="view-kung" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
     <!-- Left Column: Controls & Realtime Monitor (7 Cols) -->
     <div class="lg:col-span-7 space-y-6">
@@ -282,6 +300,102 @@
       </div>
 
     </div>
+    </div><!-- /view-kung -->
+
+    <!-- TV View (순차 이어틀기 + 63Hz 오버드라이브) -->
+    <div id="view-tv" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+      <!-- Left Column: TV Controls & Status (7 Cols) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <div class="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <span class="text-red-500">📺</span> TV 63Hz 오버드라이브 엔진
+              </h2>
+              <p class="text-xs text-gray-400">5개 음원 순차 이어틀기 + 반복으로 10시간 (32kbps 스트리밍 → 63Hz 체인)</p>
+            </div>
+            <div class="text-right">
+              <span class="text-xs text-gray-400">TV 엔진 상태</span>
+              <div id="tv-status-label" class="text-base font-mono font-black text-red-500">정지</div>
+            </div>
+          </div>
+
+          <div class="bg-[#060609] rounded-xl border border-red-950/60 p-4 space-y-2">
+            <div class="flex justify-between text-xs font-mono">
+              <span class="text-gray-400">현재 재생</span>
+              <span id="tv-now-playing" class="text-red-300 font-bold">-</span>
+            </div>
+            <div class="w-full h-2 bg-neutral-900 rounded-full overflow-hidden">
+              <div id="tv-progress-bar" class="h-full w-0 bg-gradient-to-r from-red-600 to-orange-500"></div>
+            </div>
+            <div class="flex justify-between text-xs font-mono">
+              <span class="text-gray-400">경과 <span id="tv-elapsed" class="text-white">00:00:00</span></span>
+              <span class="text-gray-400">잔여 <span id="tv-remain" class="text-red-400">10:00:00</span></span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+            <button id="btn-toggle-tv" class="col-span-2 py-4 px-6 bg-gradient-to-r from-red-600 via-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-black text-base rounded-xl shadow-xl shadow-red-950 flex items-center justify-center gap-2 transition active:scale-[0.98]">
+              <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <span id="btn-tv-text">TV 10시간 엔진 시작</span>
+            </button>
+            <button id="btn-test-tv" class="py-4 px-4 bg-gradient-to-b from-[#2b1010] to-[#1c0808] hover:from-[#3d1515] hover:to-[#2b1010] text-red-200 font-black rounded-xl border border-red-800 flex items-center justify-center gap-1.5 transition active:scale-[0.98] shadow-lg">
+              <span>📺</span> TV 랜덤 맛보기
+            </button>
+          </div>
+          <p class="text-[11px] text-gray-500 mt-3">※ TV 소리는 베이스 부스트 + 63Hz 로우패스 + 오버드라이브 + 리미터 체인을 통과합니다. (쿵은 깨끗한 원음 그대로)</p>
+        </div>
+      </div>
+
+      <!-- Right Column: TV Playlist & YouTube Export (5 Cols) -->
+      <div class="lg:col-span-5 space-y-6">
+        <div class="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-2xl flex flex-col h-full">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>📋</span> TV 10시간 재생 목록
+              </h2>
+              <p class="text-xs text-gray-400">순차 이어틀기 + 1회차 끝나면 처음부터 반복</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 bg-[#120a0a] p-2.5 rounded-xl border border-brand-border mb-3 text-center text-xs">
+            <div>
+              <span class="text-gray-500 block">재생 항목</span>
+              <span id="tv-stat-items" class="font-mono font-bold text-white">-</span>
+            </div>
+            <div>
+              <span class="text-gray-500 block">1회차 길이</span>
+              <span id="tv-stat-pass" class="font-mono font-bold text-white">-</span>
+            </div>
+            <div>
+              <span class="text-gray-500 block">총 소요 시간</span>
+              <span class="font-mono font-bold text-red-500">10:00:00</span>
+            </div>
+          </div>
+
+          <div class="bg-[#060609] border border-brand-border rounded-xl p-3 h-56 overflow-y-auto font-mono text-xs text-gray-300 space-y-1.5" id="tv-schedule-list">
+          </div>
+
+          <div class="mt-4 pt-4 border-t border-brand-border flex-1 flex flex-col">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                <span>📺</span> TV 유튜브 설명란용 템플릿
+              </span>
+              <button id="btn-copy-tv-desc" class="text-xs px-2.5 py-1 bg-neutral-900 hover:bg-neutral-800 text-white rounded border border-neutral-700 transition flex items-center gap-1">
+                <span>전체 복사</span>
+              </button>
+            </div>
+            <textarea id="tv-youtube-desc-area" readonly
+                      class="w-full flex-1 min-h-[160px] bg-[#060609] border border-brand-border rounded-xl p-3 text-xs text-gray-400 font-mono resize-none focus:outline-none focus:border-red-600 select-all"></textarea>
+            <span id="tv-copy-toast" class="text-[11px] text-green-400 mt-1 opacity-0 transition-opacity">클립보드에 복사되었습니다!</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /view-tv -->
 
   </main>
 
@@ -723,12 +837,283 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       generate10HourSchedule();
+      loadTvPlaylist();
     });
 
     // Also preload samples on first user gesture
     window.addEventListener('click', () => {
       if (!singleBuffer) loadAudioSamples();
     }, { once: true });
+
+    // ================= TV Engine (순차 이어틀기 + 63Hz 오버드라이브 체인) =================
+    const TV_TOTAL_SEC = 10 * 3600;
+    let tvChunks = [];
+    let tvPlaylist = [];
+    let tvPlaying = false;
+    let tvEntryIndex = 0;
+    let tvStartEpoch = 0;
+    let tvStopTimerId = null;
+    let tvProgressTimerId = null;
+    let tvGain = null;
+    let tvEl = [null, null];
+    let tvSrc = [null, null];
+    let tvCur = 0;
+    let tvTestEl = null;
+    let tvTestSrc = null;
+    let tvTestTimerId = null;
+
+    function tvEnsureGraph() {
+      initAudioContext();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (!tvGain) {
+        tvGain = audioCtx.createGain();
+        tvGain.gain.setValueAtTime(1.0, audioCtx.currentTime);
+        // TV는 63Hz 오버드라이브 체인(베이스부스트→로우패스→웨이브셰이퍼→리미터)을 통과
+        tvGain.connect(bassBoostFilter);
+      }
+      for (let k = 0; k < 2; k++) {
+        if (!tvEl[k]) {
+          tvEl[k] = new Audio();
+          tvEl[k].preload = 'auto';
+          tvSrc[k] = audioCtx.createMediaElementSource(tvEl[k]);
+          tvSrc[k].connect(tvGain);
+          tvEl[k].addEventListener('ended', () => onTvChunkEnded(k));
+          tvEl[k].addEventListener('error', () => onTvChunkError(k));
+        }
+      }
+    }
+
+    async function loadTvPlaylist() {
+      try {
+        const res = await fetch('/tv/tv-playlist.json');
+        const data = await res.json();
+        tvChunks = data.chunks || [];
+        // 10시간이 찰 때까지 1회차를 반복해서 펼침
+        tvPlaylist = [];
+        let t = 0;
+        let guard = 0;
+        while (t < TV_TOTAL_SEC && tvChunks.length && guard < 500) {
+          const c = tvChunks[tvPlaylist.length % tvChunks.length];
+          tvPlaylist.push({
+            file: '/' + c.file,
+            src: c.src,
+            startSec: Math.floor(t),
+            timestamp: formatTime(Math.floor(t)),
+            durationSec: c.durationSec
+          });
+          t += c.durationSec;
+          guard++;
+        }
+        renderTvSchedule();
+        generateTvDescription();
+      } catch (err) {
+        console.warn('TV playlist load failed:', err);
+        document.getElementById('tv-schedule-list').innerText = 'TV 목록 로딩 실패';
+      }
+    }
+
+    function renderTvSchedule() {
+      const box = document.getElementById('tv-schedule-list');
+      box.innerHTML = '';
+      tvPlaylist.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.id = `tv-item-${idx}`;
+        div.className = 'flex items-center justify-between p-1.5 rounded hover:bg-neutral-900/80 transition border-b border-neutral-900';
+        div.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="text-red-500 font-bold">${item.timestamp}</span>
+            <span class="text-gray-300 text-[11px]">${item.src}번 음원</span>
+          </div>
+          <div class="text-gray-500 text-[11px]">${Math.floor(item.durationSec / 60)}분 ${Math.floor(item.durationSec % 60)}초</div>
+        `;
+        box.appendChild(div);
+      });
+      document.getElementById('tv-stat-items').innerText = `${tvPlaylist.length}개`;
+      if (tvChunks.length) {
+        const passSec = tvChunks.reduce((a, c) => a + c.durationSec, 0);
+        document.getElementById('tv-stat-pass').innerText = formatTime(Math.floor(passSec));
+      }
+    }
+
+    function generateTvDescription() {
+      let desc = `[도헌사운드 | DohunSound] TV 사운드 63Hz 오버드라이브 10시간 순차 이어틀기\n\n`;
+      desc += `[오디오 사양 (Audio Specification)]\n`;
+      desc += `* 소스: TV 음원 5개 (32kbps mono 스트리밍) 순차 재생 + 1회차 종료 후 처음부터 반복\n`;
+      desc += `* 체인: Low-shelf Bass Boost + 63Hz Lowpass + WaveShaper Overdrive + Limiter\n`;
+      desc += `* 총 길이: 10시간 (10:00:00)\n\n`;
+      desc += `========================================\n`;
+      desc += `[10시간 타임스탬프 목차 (Timestamps)]\n`;
+      desc += `========================================\n`;
+      tvPlaylist.forEach(item => {
+        desc += `${item.timestamp} ${item.src}번 음원 (${Math.floor(item.durationSec / 60)}분)\n`;
+      });
+      desc += `\n© 2026 DohunSound. All rights reserved.\n`;
+      document.getElementById('tv-youtube-desc-area').value = desc;
+    }
+
+    document.getElementById('btn-copy-tv-desc').addEventListener('click', () => {
+      const copyText = document.getElementById('tv-youtube-desc-area');
+      copyText.select();
+      navigator.clipboard.writeText(copyText.value).then(() => {
+        const toast = document.getElementById('tv-copy-toast');
+        toast.style.opacity = '1';
+        setTimeout(() => toast.style.opacity = '0', 2000);
+      });
+    });
+
+    function tvHighlight(idx) {
+      document.querySelectorAll('[id^="tv-item-"]').forEach(el => {
+        el.classList.remove('bg-red-950', 'border-red-600');
+        el.classList.add('opacity-40');
+      });
+      const el = document.getElementById(`tv-item-${idx}`);
+      if (el) {
+        el.classList.remove('opacity-40');
+        el.classList.add('bg-red-950', 'border-red-600');
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function tvUpdateBadge(running) {
+      const badge = document.getElementById('tv-badge');
+      const label = document.getElementById('tv-status-label');
+      const btnText = document.getElementById('btn-tv-text');
+      if (running) {
+        badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-950 text-red-400 border border-red-800 animate-pulse';
+        badge.innerHTML = `<span class="w-2 h-2 mr-1.5 rounded-full bg-red-500"></span> TV 가동 중`;
+        label.innerText = '재생 중 (63Hz OD)';
+        label.className = 'text-base font-mono font-black text-red-400 animate-pulse';
+        btnText.innerText = 'TV 엔진 정지 (STOP)';
+      } else {
+        badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-900 text-gray-400 border border-gray-800';
+        badge.innerHTML = `<span class="w-2 h-2 mr-1.5 rounded-full bg-gray-500"></span> TV 정지`;
+        label.innerText = '정지';
+        label.className = 'text-base font-mono font-black text-red-500';
+        btnText.innerText = 'TV 10시간 엔진 시작';
+      }
+    }
+
+    function tvTickProgress() {
+      if (!tvPlaying) return;
+      const elapsedSec = Math.floor((Date.now() - tvStartEpoch) / 1000);
+      const remainSec = Math.max(0, TV_TOTAL_SEC - elapsedSec);
+      document.getElementById('tv-elapsed').innerText = formatTime(Math.min(elapsedSec, TV_TOTAL_SEC));
+      document.getElementById('tv-remain').innerText = formatTime(remainSec);
+      document.getElementById('tv-progress-bar').style.width = `${(Math.min(elapsedSec, TV_TOTAL_SEC) / TV_TOTAL_SEC * 100).toFixed(2)}%`;
+    }
+
+    function playTvEntry(idx, elK) {
+      const entry = tvPlaylist[idx];
+      if (!entry) return;
+      const el = tvEl[elK];
+      el.src = entry.file;
+      el.load();
+      el.play().catch(err => console.warn('TV play failed, skip:', err));
+      document.getElementById('tv-now-playing').innerText = `${entry.timestamp} ${entry.src}번 음원`;
+      tvHighlight(idx);
+      // 다음 항목 미리 버퍼링
+      const nextIdx = idx + 1;
+      if (nextIdx < tvPlaylist.length) {
+        const other = tvEl[1 - elK];
+        other.src = tvPlaylist[nextIdx].file;
+        other.load();
+      }
+    }
+
+    function onTvChunkEnded(elK) {
+      if (!tvPlaying) return;
+      if (elK !== tvCur) return; // 미리 버퍼링된 엘리먼트의 ended가 아님
+      const nextIdx = tvEntryIndex + 1;
+      if (nextIdx >= tvPlaylist.length) {
+        stopTvEngine();
+        alert('TV 10시간 재생이 완료되었습니다.');
+        return;
+      }
+      tvEntryIndex = nextIdx;
+      tvCur = 1 - tvCur;
+      playTvEntry(tvEntryIndex, tvCur);
+    }
+
+    function onTvChunkError(elK) {
+      if (!tvPlaying || elK !== tvCur) return;
+      console.warn('TV chunk error, skipping index', tvEntryIndex);
+      onTvChunkEnded(elK);
+    }
+
+    function startTvEngine() {
+      if (!tvPlaylist.length) return;
+      tvEnsureGraph();
+      tvPlaying = true;
+      tvEntryIndex = 0;
+      tvCur = 0;
+      tvStartEpoch = Date.now();
+      tvUpdateBadge(true);
+      tvTickProgress();
+      if (tvProgressTimerId) clearInterval(tvProgressTimerId);
+      tvProgressTimerId = setInterval(tvTickProgress, 1000);
+      if (tvStopTimerId) clearTimeout(tvStopTimerId);
+      tvStopTimerId = setTimeout(() => {
+        stopTvEngine();
+        alert('TV 10시간 재생이 완료되었습니다.');
+      }, TV_TOTAL_SEC * 1000);
+      playTvEntry(0, 0);
+    }
+
+    function stopTvEngine() {
+      tvPlaying = false;
+      if (tvStopTimerId) clearTimeout(tvStopTimerId);
+      if (tvProgressTimerId) clearInterval(tvProgressTimerId);
+      tvEl.forEach(el => { if (el) { try { el.pause(); } catch (e) {} } });
+      document.getElementById('tv-elapsed').innerText = '00:00:00';
+      document.getElementById('tv-remain').innerText = '10:00:00';
+      document.getElementById('tv-progress-bar').style.width = '0%';
+      tvUpdateBadge(false);
+    }
+
+    document.getElementById('btn-toggle-tv').addEventListener('click', () => {
+      if (tvPlaying) stopTvEngine();
+      else startTvEngine();
+    });
+
+    // TV 랜덤 맛보기 (랜덤 청크의 랜덤 지점 30초)
+    document.getElementById('btn-test-tv').addEventListener('click', () => {
+      if (!tvChunks.length) return;
+      tvEnsureGraph();
+      if (!tvTestEl) {
+        tvTestEl = new Audio();
+        tvTestEl.preload = 'auto';
+        tvTestSrc = audioCtx.createMediaElementSource(tvTestEl);
+        tvTestSrc.connect(tvGain);
+      }
+      if (tvTestTimerId) clearTimeout(tvTestTimerId);
+      try { tvTestEl.pause(); } catch (e) {}
+      const c = tvChunks[Math.floor(Math.random() * tvChunks.length)];
+      tvTestEl.src = '/' + c.file;
+      tvTestEl.load();
+      const offset = Math.floor(Math.random() * Math.max(1, Math.floor(c.durationSec) - 40));
+      const onMeta = () => {
+        try { tvTestEl.currentTime = Math.min(offset, Math.max(0, tvTestEl.duration - 35)); } catch (e) {}
+        tvTestEl.play().catch(() => {});
+        tvTestTimerId = setTimeout(() => { try { tvTestEl.pause(); } catch (e) {} }, 30000);
+      };
+      tvTestEl.addEventListener('loadedmetadata', onMeta, { once: true });
+      document.getElementById('tv-now-playing').innerText = `맛보기: ${c.src}번 음원`;
+    });
+
+    // 탭 전환 (쿵 / TV)
+    function switchTab(which) {
+      const isKung = which === 'kung';
+      document.getElementById('view-kung').classList.toggle('hidden', !isKung);
+      document.getElementById('view-tv').classList.toggle('hidden', isKung);
+      document.getElementById('view-kung').classList.toggle('grid', isKung);
+      document.getElementById('view-tv').classList.toggle('grid', !isKung);
+      const active = 'flex-1 py-3 px-4 rounded-xl font-black text-sm bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-xl shadow-red-950 border border-red-500 transition active:scale-[0.98]';
+      const idle = 'flex-1 py-3 px-4 rounded-xl font-black text-sm bg-[#1c0808] text-red-200/70 border border-red-900 transition active:scale-[0.98] hover:bg-[#2b1010]';
+      document.getElementById('tab-kung').className = isKung ? active : idle;
+      document.getElementById('tab-tv').className = isKung ? idle : active;
+    }
+    document.getElementById('tab-kung').addEventListener('click', () => switchTab('kung'));
+    document.getElementById('tab-tv').addEventListener('click', () => switchTab('tv'));
   </script>
 </body>
 </html>
