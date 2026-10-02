@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>도헌사운드 | DohunSound - 63Hz 극저음 오버드라이브 엔진</title>
+  <title>도헌사운드 | DohunSound - 63Hz 극저음 극한 증폭 & 초대형 우퍼 파쇄기</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -13,20 +13,23 @@
         extend: {
           colors: {
             brand: {
-              red: '#ff1a1a',
-              neon: '#ff3333',
-              dark: '#0a0a0d',
-              card: '#121218',
-              border: '#262633'
+              red: '#ff0000',
+              neon: '#ff1111',
+              dark: '#050508',
+              card: '#0e0e14',
+              border: '#331515'
             }
           },
           animation: {
-            'pulse-sub': 'subpulse 0.4s ease-out infinite alternate',
+            'earthquake': 'earthquake 0.1s ease-in-out infinite alternate',
           },
           keyframes: {
-            subpulse: {
-              '0%': { transform: 'scale(1)', boxShadow: '0 0 10px rgba(255, 30, 30, 0.2)' },
-              '100%': { transform: 'scale(1.05)', boxShadow: '0 0 40px rgba(255, 30, 30, 0.8)' }
+            earthquake: {
+              '0%': { transform: 'translate(0, 0)' },
+              '25%': { transform: 'translate(-4px, 4px) rotate(-0.5deg)' },
+              '50%': { transform: 'translate(4px, -4px) rotate(0.5deg)' },
+              '75%': { transform: 'translate(-3px, -2px)' },
+              '100%': { transform: 'translate(3px, 2px)' }
             }
           }
         }
@@ -34,42 +37,32 @@
     }
   </script>
   <style>
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0e0e13;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #2a2a38;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #ff3333;
-    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #07070a; }
+    ::-webkit-scrollbar-thumb { background: #3b0d0d; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #ff0000; }
   </style>
 </head>
-<body class="bg-[#08080b] text-gray-200 min-h-screen flex flex-col font-sans selection:bg-red-600 selection:text-white">
+<body id="app-body" class="bg-[#050508] text-gray-200 min-h-screen flex flex-col font-sans selection:bg-red-600 selection:text-white transition-transform">
 
   <!-- Header -->
-  <header class="border-b border-brand-border bg-brand-dark/80 backdrop-blur sticky top-0 z-50">
+  <header class="border-b border-brand-border bg-[#0a0a10]/90 backdrop-blur sticky top-0 z-50">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 to-orange-500 flex items-center justify-center shadow-lg shadow-red-900/40">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-red-600 via-red-500 to-orange-500 flex items-center justify-center shadow-xl shadow-red-950">
+          <svg class="w-7 h-7 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
         </div>
         <div>
           <h1 class="text-xl font-black tracking-wider text-white flex items-center gap-2">
-            도헌사운드 <span class="text-xs px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 uppercase font-mono">DohunSound DSP</span>
+            도헌사운드 <span class="text-[10px] px-2 py-0.5 rounded bg-red-900 text-red-200 border border-red-600 uppercase font-mono font-bold tracking-widest animate-pulse">MAX VOLUME ULTRA</span>
           </h1>
-          <p class="text-xs text-gray-400">63Hz 이하 서브우퍼 극한 증폭 & 무작위 10시간 스케줄러</p>
+          <p class="text-xs text-red-400/90 font-medium">63Hz 이하 서브우퍼 극한 왜곡(Max Overdrive) & 10시간 스케줄러</p>
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <span id="dsp-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-800 text-gray-400 border border-gray-700">
+        <span id="dsp-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-900 text-gray-400 border border-gray-800">
           <span class="w-2 h-2 mr-1.5 rounded-full bg-gray-500" id="dsp-indicator"></span>
           대기 중 (IDLE)
         </span>
@@ -77,10 +70,10 @@
     </div>
   </header>
 
-  <!-- Warning Banner -->
-  <div class="bg-red-950/50 border-b border-red-900/50 text-red-300 text-xs px-4 py-2.5 text-center">
-    ⚠️ <strong>경고:</strong> 본 오디오 시스템은 63Hz 이하 서브우퍼 대역에 강력한 하드 클리핑(Hard Clipping) 및 과증폭(Overdrive)을 적용합니다. 
-    장시간 고볼륨 재생 시 스피커 파손이나 청각 손상에 주의하십시오.
+  <!-- Super Loud Warning Banner -->
+  <div class="bg-red-950/80 border-b border-red-700/60 text-red-200 text-xs px-4 py-3 text-center flex items-center justify-center gap-2 font-medium">
+    <span class="text-base animate-bounce">🚨</span>
+    <span><strong>[초특대 볼륨 모드 탑재]</strong> 3중 다중 오실레이터 + 서브 베이스 부스트 셸빙 필터 + 극한 다이나믹스 컴프레서/리미터 게인이 적용되어 스피커 및 우퍼가 파열될 정도의 극대화된 볼륨으로 출력됩니다!</span>
   </div>
 
   <!-- Main Container -->
@@ -90,121 +83,142 @@
     <div class="lg:col-span-7 space-y-6">
 
       <!-- Realtime Audio Status & Visualizer -->
-      <div class="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-xl relative overflow-hidden">
+      <div class="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-2xl relative overflow-hidden">
         <div class="flex justify-between items-center mb-4">
           <div>
             <h2 class="text-lg font-bold text-white flex items-center gap-2">
-              <span>🔊</span> 실시간 서브우퍼 신호 분석기
+              <span class="text-red-500">🔊</span> 초극강 서브우퍼 파동 분석기
             </h2>
-            <p class="text-xs text-gray-400">20Hz ~ 63Hz 진동 및 파형 실시간 모니터링</p>
+            <p class="text-xs text-gray-400">20Hz ~ 63Hz 지진파 파형 & 충격파 실시간 감지</p>
           </div>
           <div class="text-right">
-            <span class="text-xs text-gray-400">마지막 타격 속도</span>
-            <div id="playback-rate-label" class="text-sm font-mono font-bold text-red-400">1.00x</div>
+            <span class="text-xs text-gray-400">타격 속도 / 위력</span>
+            <div id="playback-rate-label" class="text-base font-mono font-black text-red-500">1.00x (MAX)</div>
           </div>
         </div>
 
         <!-- Canvas Visualizer -->
-        <div class="relative w-full h-36 bg-[#0a0a0e] rounded-xl overflow-hidden border border-[#20202a]">
+        <div class="relative w-full h-40 bg-[#060609] rounded-xl overflow-hidden border border-red-950/60">
           <canvas id="visualizer-canvas" class="w-full h-full"></canvas>
-          <div id="hit-flash" class="absolute inset-0 bg-red-600/30 opacity-0 pointer-events-none transition-opacity duration-150"></div>
-          <div class="absolute bottom-2 left-3 text-[10px] font-mono text-gray-500">Sub-bass Band &lt; 63Hz Active</div>
+          <div id="hit-flash" class="absolute inset-0 bg-red-600/40 opacity-0 pointer-events-none transition-opacity duration-100 backdrop-invert-0"></div>
+          <div class="absolute bottom-2 left-3 text-[10px] font-mono text-red-400/80">ULTRA SUB-BASS RESONANCE ACTIVATED (&lt;63Hz)</div>
         </div>
 
         <!-- Subwoofer Vibration Sim Visualizer Indicator -->
-        <div class="mt-4 flex items-center justify-between bg-[#171720] px-4 py-3 rounded-xl border border-brand-border">
+        <div class="mt-4 flex items-center justify-between bg-[#120a0a] px-4 py-3.5 rounded-xl border border-red-950">
           <div class="flex items-center gap-3">
-            <div id="sub-cone" class="w-10 h-10 rounded-full bg-neutral-800 border-2 border-neutral-600 flex items-center justify-center transition-transform duration-75">
-              <div class="w-4 h-4 rounded-full bg-red-600"></div>
+            <div id="sub-cone" class="w-12 h-12 rounded-full bg-neutral-900 border-4 border-red-700/80 flex items-center justify-center transition-transform duration-75 shadow-lg shadow-red-900/60">
+              <div class="w-5 h-5 rounded-full bg-red-600 animate-ping"></div>
             </div>
             <div>
-              <div class="text-xs font-semibold text-gray-300">우퍼 진동 반응</div>
-              <div id="impact-type-label" class="text-[11px] text-gray-400">대기 중...</div>
+              <div class="text-xs font-bold text-white">우퍼 익스커션 (Excursion 진동)</div>
+              <div id="impact-type-label" class="text-[11px] text-red-400 font-mono">준비 완료</div>
             </div>
           </div>
           <div class="text-right">
-            <div class="text-xs font-mono text-gray-400">다음 타격까지 남은 시간</div>
-            <div id="countdown-timer" class="text-base font-mono font-black text-white">--:--</div>
+            <div class="text-xs font-mono text-gray-400">다음 굉음 타격까지 남은 시간</div>
+            <div id="countdown-timer" class="text-lg font-mono font-black text-red-400">--:--</div>
           </div>
         </div>
       </div>
 
       <!-- DSP & Playback Controller -->
-      <div class="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-xl space-y-6">
+      <div class="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-2xl space-y-6">
         <h2 class="text-lg font-bold text-white flex items-center gap-2">
-          <span>🎛️</span> DSP 사운드 매개변수 & 엔진 제어
+          <span>🎛️</span> 파괴적 볼륨 DSP 제어판
         </h2>
 
         <!-- Main Buttons -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <button id="btn-toggle-engine" class="col-span-2 py-4 px-6 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-900/50 flex items-center justify-center gap-2 transition active:scale-[0.98]">
-            <svg id="icon-play" class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            <span id="btn-play-text">실시간 10시간 엔진 시작</span>
+          <button id="btn-toggle-engine" class="col-span-2 py-4 px-6 bg-gradient-to-r from-red-600 via-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-black text-base rounded-xl shadow-xl shadow-red-950 flex items-center justify-center gap-2 transition active:scale-[0.98]">
+            <svg id="icon-play" class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <span id="btn-play-text">초특대 10시간 엔진 시작</span>
           </button>
           
-          <button id="btn-test-hit" class="py-4 px-4 bg-[#232330] hover:bg-[#2e2e40] text-gray-200 font-bold rounded-xl border border-brand-border flex items-center justify-center gap-1.5 transition active:scale-[0.98]">
-            <span>💥</span> 단발 즉시 테스트
+          <button id="btn-test-hit" class="py-4 px-4 bg-gradient-to-b from-[#2b1010] to-[#1c0808] hover:from-[#3d1515] hover:to-[#2b1010] text-red-200 font-black rounded-xl border border-red-800 flex items-center justify-center gap-1.5 transition active:scale-[0.98] shadow-lg">
+            <span>💥</span> 즉시 굉음 폭격
           </button>
         </div>
 
         <!-- Sliders & Toggles -->
         <div class="space-y-4 pt-2 border-t border-brand-border/60">
+          
+          <!-- Master Gain Control (Max 10x Boost) -->
+          <div class="p-3.5 bg-[#170909] rounded-xl border border-red-900/50">
+            <div class="flex justify-between text-sm mb-1.5 font-bold">
+              <span class="text-white flex items-center gap-1.5">
+                <span class="text-red-500">⚡</span> 마스터 볼륨 증폭 게인 (Volume Max Boost)
+              </span>
+              <span id="gain-val" class="font-mono text-red-400 font-black text-base">5.00x (+14dB 극대화)</span>
+            </div>
+            <input type="range" id="slider-gain" min="1.0" max="10.0" step="0.2" value="5.0" 
+                   class="w-full h-3 bg-neutral-900 rounded-lg appearance-none cursor-pointer accent-red-600">
+            <div class="flex justify-between text-[11px] text-gray-400 mt-1 font-mono">
+              <span>1.0x (일반)</span>
+              <span>3.0x (강함)</span>
+              <span class="text-yellow-400 font-bold">5.0x (기본: 겁나큼)</span>
+              <span class="text-red-500 font-black">10.0x (개큼/극한파쇄)</span>
+            </div>
+          </div>
+
+          <!-- Bass Boost Gain (+20dB Low Shelf) -->
+          <div class="p-3.5 bg-[#170909] rounded-xl border border-red-900/50">
+            <div class="flex justify-between text-sm mb-1.5 font-bold">
+              <span class="text-white flex items-center gap-1.5">
+                <span class="text-orange-500">💣</span> 서브우퍼 베이스 부스트 (Sub-Bass Low Shelf Gain)
+              </span>
+              <span id="bassboost-val" class="font-mono text-orange-400 font-black text-base">+16 dB</span>
+            </div>
+            <input type="range" id="slider-bassboost" min="0" max="25" step="1" value="16" 
+                   class="w-full h-3 bg-neutral-900 rounded-lg appearance-none cursor-pointer accent-orange-600">
+            <div class="flex justify-between text-[11px] text-gray-400 mt-1 font-mono">
+              <span>0dB (플랫)</span>
+              <span>+10dB</span>
+              <span class="text-orange-400 font-bold">+16dB (기본 부스트)</span>
+              <span class="text-red-500 font-black">+25dB (최대 저음 굉음)</span>
+            </div>
+          </div>
+
           <!-- Overdrive Toggle -->
-          <div class="flex items-center justify-between p-3.5 rounded-xl bg-[#171722] border border-brand-border">
+          <div class="flex items-center justify-between p-3.5 rounded-xl bg-[#120a0a] border border-brand-border">
             <div>
-              <div class="text-sm font-semibold text-white flex items-center gap-2">
-                <span>🔥</span> 극한 오버드라이브 / 하드 클리핑 (Overdrive & WaveShaping)
+              <div class="text-sm font-bold text-white flex items-center gap-2">
+                <span>🔥</span> 극한 오버드라이브 & 하드 클리핑 (WaveShaper Hard Clip)
               </div>
-              <p class="text-xs text-gray-400">WaveShaper 곡선 왜곡 및 배음 증폭으로 스피커 타격감 극대화</p>
+              <p class="text-xs text-gray-400">포화 왜곡(Saturation) 곡선으로 스피커를 끝까지 때려부수는 타격감 생성</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" id="toggle-overdrive" class="sr-only peer" checked>
-              <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+              <div class="w-12 h-6 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
             </label>
           </div>
 
-          <!-- Master Gain Control -->
+          <!-- Cutoff Frequency -->
           <div>
             <div class="flex justify-between text-sm mb-1.5 font-medium">
-              <span class="text-gray-300">마스터 증폭 게인 (Master Gain Level)</span>
-              <span id="gain-val" class="font-mono text-red-400 font-bold">2.50x (+8dB)</span>
+              <span class="text-gray-300">서브 베이스 컷오프 상한선 (Strict 63Hz Cutoff)</span>
+              <span id="freq-val" class="font-mono text-red-400 font-bold">62 Hz</span>
             </div>
-            <input type="range" id="slider-gain" min="0.5" max="5.0" step="0.1" value="2.5" 
-                   class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-red-600">
+            <input type="range" id="slider-freq" min="30" max="63" step="1" value="62" 
+                   class="w-full h-2 bg-neutral-900 rounded-lg appearance-none cursor-pointer accent-red-600">
             <div class="flex justify-between text-[11px] text-gray-500 mt-1">
-              <span>0.5x (안전)</span>
-              <span>1.0x (표준)</span>
-              <span class="text-yellow-500">2.0x (고출력)</span>
-              <span class="text-red-500 font-bold">5.0x (극한 클리핑)</span>
-            </div>
-          </div>
-
-          <!-- Pitch & Frequency Control -->
-          <div>
-            <div class="flex justify-between text-sm mb-1.5 font-medium">
-              <span class="text-gray-300">서브 베이스 컷오프 주파수 (Low-Pass Filter)</span>
-              <span id="freq-val" class="font-mono text-red-400 font-bold">58 Hz</span>
-            </div>
-            <input type="range" id="slider-freq" min="30" max="63" step="1" value="58" 
-                   class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-red-600">
-            <div class="flex justify-between text-[11px] text-gray-500 mt-1">
-              <span>30 Hz (심해 초저음)</span>
+              <span>30 Hz</span>
               <span>45 Hz</span>
-              <span>63 Hz (서브우퍼 표준 상한선)</span>
+              <span>63 Hz (서브우퍼 전용 상한)</span>
             </div>
           </div>
 
-          <!-- Random Speed Variation Range -->
-          <div class="grid grid-cols-2 gap-4 pt-2">
-            <div class="bg-[#171722] p-3 rounded-xl border border-brand-border">
-              <span class="text-xs text-gray-400 block mb-1">재생 속도 무작위 범위</span>
-              <span class="text-sm font-mono font-bold text-white">0.5x ~ 1.8x 변동</span>
-              <span class="text-[11px] text-gray-500 block mt-0.5">쿵 질감 피치/길이 다이나믹 변조</span>
+          <!-- Specs Info -->
+          <div class="grid grid-cols-2 gap-4 pt-1">
+            <div class="bg-[#120a0a] p-3 rounded-xl border border-brand-border">
+              <span class="text-xs text-gray-400 block mb-1">재생 템포 무작위</span>
+              <span class="text-sm font-mono font-bold text-white">0.5x ~ 1.8x 변조</span>
+              <span class="text-[11px] text-gray-500 block mt-0.5">쿵 질감 및 피치 변화</span>
             </div>
-            <div class="bg-[#171722] p-3 rounded-xl border border-brand-border">
+            <div class="bg-[#120a0a] p-3 rounded-xl border border-brand-border">
               <span class="text-xs text-gray-400 block mb-1">무음 휴지기 (Silence)</span>
               <span class="text-sm font-mono font-bold text-white">1분 ~ 20분 무작위</span>
-              <span class="text-[11px] text-gray-500 block mt-0.5">총 10시간 동안 불규칙 재생</span>
+              <span class="text-[11px] text-gray-500 block mt-0.5">10시간 동안 불규칙 기습 타격</span>
             </div>
           </div>
         </div>
@@ -215,7 +229,7 @@
     <div class="lg:col-span-5 space-y-6">
 
       <!-- Schedule Generator Card -->
-      <div class="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-xl flex flex-col h-full">
+      <div class="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-2xl flex flex-col h-full">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h2 class="text-lg font-bold text-white flex items-center gap-2">
@@ -223,13 +237,13 @@
             </h2>
             <p class="text-xs text-gray-400">1분~20분 무작위 간격, 1~2초 타격 계산</p>
           </div>
-          <button id="btn-generate-schedule" class="text-xs px-3 py-1.5 rounded-lg bg-red-900/60 hover:bg-red-800 text-red-200 border border-red-700/60 transition">
+          <button id="btn-generate-schedule" class="text-xs px-3 py-1.5 rounded-lg bg-red-950 hover:bg-red-900 text-red-200 border border-red-700 transition">
             스케줄 재추첨
           </button>
         </div>
 
         <!-- Schedule Stats Bar -->
-        <div class="grid grid-cols-3 gap-2 bg-[#171722] p-2.5 rounded-xl border border-brand-border mb-3 text-center text-xs">
+        <div class="grid grid-cols-3 gap-2 bg-[#120a0a] p-2.5 rounded-xl border border-brand-border mb-3 text-center text-xs">
           <div>
             <span class="text-gray-500 block">총 타격 횟수</span>
             <span id="stat-total-hits" class="font-mono font-bold text-white">-</span>
@@ -240,13 +254,12 @@
           </div>
           <div>
             <span class="text-gray-500 block">총 소요 시간</span>
-            <span class="font-mono font-bold text-red-400">10:00:00</span>
+            <span class="font-mono font-bold text-red-500">10:00:00</span>
           </div>
         </div>
 
         <!-- Schedule List Viewer -->
-        <div class="bg-[#0b0b10] border border-brand-border rounded-xl p-3 h-56 overflow-y-auto font-mono text-xs text-gray-300 space-y-1.5" id="schedule-list">
-          <!-- Timestamps rendered here -->
+        <div class="bg-[#060609] border border-brand-border rounded-xl p-3 h-56 overflow-y-auto font-mono text-xs text-gray-300 space-y-1.5" id="schedule-list">
         </div>
 
         <!-- YouTube Description Export Section -->
@@ -255,14 +268,14 @@
             <span class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
               <span>📺</span> 유튜브 영상 설명란용 템플릿
             </span>
-            <button id="btn-copy-desc" class="text-xs px-2.5 py-1 bg-neutral-800 hover:bg-neutral-700 text-white rounded border border-neutral-600 transition flex items-center gap-1">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            <button id="btn-copy-desc" class="text-xs px-2.5 py-1 bg-neutral-900 hover:bg-neutral-800 text-white rounded border border-neutral-700 transition flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
               <span>전체 복사</span>
             </button>
           </div>
           
           <textarea id="youtube-desc-area" readonly 
-                    class="w-full flex-1 min-h-[160px] bg-[#0b0b10] border border-brand-border rounded-xl p-3 text-xs text-gray-400 font-mono resize-none focus:outline-none focus:border-red-600 select-all"></textarea>
+                    class="w-full flex-1 min-h-[160px] bg-[#060609] border border-brand-border rounded-xl p-3 text-xs text-gray-400 font-mono resize-none focus:outline-none focus:border-red-600 select-all"></textarea>
           <span id="copy-toast" class="text-[11px] text-green-400 mt-1 opacity-0 transition-opacity">클립보드에 복사되었습니다!</span>
         </div>
 
@@ -272,32 +285,33 @@
 
   </main>
 
-  <!-- Audio Synthesis Script (Web Audio API & Scheduler) -->
+  <!-- Audio Synthesis Script (Web Audio API & Massive DSP Chain) -->
   <script>
     // --- Audio Context & Graph Variables ---
     let audioCtx = null;
     let masterGain = null;
-    let waveShaper = null;
+    let bassBoostFilter = null;
     let lowPassFilter = null;
+    let waveShaper = null;
+    let dynamicsCompressor = null;
     let analyser = null;
     let isPlaying = false;
-    let timerId = null;
     let nextScheduledTimeoutId = null;
-    let schedulePlan = []; // Array of { timeSec, timestamp, duration, speed, type }
+    let schedulePlan = [];
     let currentEventIndex = 0;
     let countdownInterval = null;
     let nextTargetEpoch = 0;
 
-    // Distortion Curve Generator (Hard Clipping / Warm Overdrive)
-    function makeDistortionCurve(amount = 50) {
-      const k = typeof amount === 'number' ? amount : 50;
+    // Hard Clipping & WaveShaping Curve
+    function makeUltraDistortionCurve(amount = 120) {
+      const k = typeof amount === 'number' ? amount : 120;
       const n_samples = 44100;
       const curve = new Float32Array(n_samples);
       const deg = Math.PI / 180;
       for (let i = 0; i < n_samples; ++i) {
         let x = (i * 2) / n_samples - 1;
-        // Hyperbolic tangent & hard limit formula for rich sub bass overdrive
-        curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+        // Hard-knee overdrive formula: boosts quiet body and brickwall-clips transient peaks
+        curve[i] = ((3 + k) * x * 25 * deg) / (Math.PI + k * Math.abs(x));
       }
       return curve;
     }
@@ -308,37 +322,52 @@
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       audioCtx = new AudioContextClass();
 
-      // Master Gain
-      masterGain = audioCtx.createGain();
-      masterGain.gain.setValueAtTime(parseFloat(document.getElementById('slider-gain').value), audioCtx.currentTime);
+      // 1. Low Shelf Bass Booster Filter (+16dB at 50Hz)
+      bassBoostFilter = audioCtx.createBiquadFilter();
+      bassBoostFilter.type = 'lowshelf';
+      bassBoostFilter.frequency.setValueAtTime(55, audioCtx.currentTime);
+      bassBoostFilter.gain.setValueAtTime(parseFloat(document.getElementById('slider-bassboost').value), audioCtx.currentTime);
 
-      // Low Pass Filter (Strictly sub 63Hz)
+      // 2. Strict Sub 63Hz Low Pass Filter with high resonance
       lowPassFilter = audioCtx.createBiquadFilter();
       lowPassFilter.type = 'lowpass';
       lowPassFilter.frequency.setValueAtTime(parseFloat(document.getElementById('slider-freq').value), audioCtx.currentTime);
-      lowPassFilter.Q.setValueAtTime(4.0, audioCtx.currentTime); // Resonance peak for punch
+      lowPassFilter.Q.setValueAtTime(6.0, audioCtx.currentTime); // Resonance peak boost
 
-      // WaveShaper Overdrive
+      // 3. Extreme WaveShaper Distortion (Amount: 120)
       waveShaper = audioCtx.createWaveShaper();
-      waveShaper.curve = makeDistortionCurve(65);
+      waveShaper.curve = makeUltraDistortionCurve(120);
       waveShaper.oversample = '4x';
 
-      // Analyser for UI visualizer
+      // 4. Dynamics Compressor as Brickwall Limiter to pump maximum power without NaN crash
+      dynamicsCompressor = audioCtx.createDynamicsCompressor();
+      dynamicsCompressor.threshold.setValueAtTime(-6.0, audioCtx.currentTime);
+      dynamicsCompressor.knee.setValueAtTime(0.0, audioCtx.currentTime); // Hard knee
+      dynamicsCompressor.ratio.setValueAtTime(20.0, audioCtx.currentTime); // Max limiter ratio
+      dynamicsCompressor.attack.setValueAtTime(0.001, audioCtx.currentTime); // Fast attack
+      dynamicsCompressor.release.setValueAtTime(0.05, audioCtx.currentTime);
+
+      // 5. Master Gain Level (Supports up to 10.0x / default 5.0x)
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(parseFloat(document.getElementById('slider-gain').value), audioCtx.currentTime);
+
+      // 6. Analyser for Realtime Canvas
       analyser = audioCtx.createAnalyser();
       analyser.fftSize = 512;
 
       // Audio Graph Connection:
-      // Voice -> LowPassFilter -> WaveShaper -> MasterGain -> Analyser -> Destination
+      // Voice Synthesizer -> bassBoostFilter -> lowPassFilter -> waveShaper -> dynamicsCompressor -> masterGain -> analyser -> destination
+      bassBoostFilter.connect(lowPassFilter);
       lowPassFilter.connect(waveShaper);
-      waveShaper.connect(masterGain);
+      waveShaper.connect(dynamicsCompressor);
+      dynamicsCompressor.connect(masterGain);
       masterGain.connect(analyser);
       analyser.connect(audioCtx.destination);
 
       startVisualizer();
     }
 
-    // Procedural Synthesizer: Trigger Single or Double Sub-63Hz Strike
-    // Speed range: 0.5x ~ 1.8x
+    // Procedural Synthesizer: 3-Layer Heavy Sub-Bass Generator
     function playSubBassImpact(speed = 1.0, isDouble = false) {
       if (!audioCtx) initAudioContext();
       if (audioCtx.state === 'suspended') {
@@ -346,83 +375,103 @@
       }
 
       const now = audioCtx.currentTime;
-      // Duration scaled inversely by speed
-      const baseDuration = (isDouble ? 1.8 : 1.2) / speed;
 
       function triggerSingleHit(startTime, pitchMultiplier = 1.0) {
-        const osc = audioCtx.createOscillator();
-        const subOsc = audioCtx.createOscillator();
+        // Oscillator 1: Primary Heavy Sine Sweep (62Hz -> 28Hz)
+        const osc1 = audioCtx.createOscillator();
+        // Oscillator 2: Sub-Harmonic Triangle for massive body rumble
+        const osc2 = audioCtx.createOscillator();
+        // Oscillator 3: Ultra-Low Sine (35Hz -> 18Hz) for chest-thumping vibration
+        const osc3 = audioCtx.createOscillator();
+
         const hitGain = audioCtx.createGain();
 
-        // 63Hz base down-sweep to 32Hz
-        const startPitch = Math.min(63, 60 * speed * pitchMultiplier);
-        const endPitch = 28 * speed;
+        const startPitch = Math.min(62.5, 61.0 * speed * pitchMultiplier);
+        const endPitch = 25.0 * speed;
 
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(startPitch, startTime);
-        osc.frequency.exponentialRampToValueAtTime(endPitch, startTime + (0.6 / speed));
+        // Osc 1
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(startPitch, startTime);
+        osc1.frequency.exponentialRampToValueAtTime(endPitch, startTime + (0.7 / speed));
 
-        // Sub 2nd Harmonic/Triangle for thick rumble
-        subOsc.type = 'triangle';
-        subOsc.frequency.setValueAtTime(startPitch * 0.75, startTime);
-        subOsc.frequency.exponentialRampToValueAtTime(24, startTime + (0.7 / speed));
+        // Osc 2 (Triangle)
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(startPitch * 0.85, startTime);
+        osc2.frequency.exponentialRampToValueAtTime(20.0, startTime + (0.8 / speed));
 
-        // Amplitude Envelope with extreme punch
-        const hitDuration = (0.9 / speed);
+        // Osc 3 (Deep Sub Sine)
+        osc3.type = 'sine';
+        osc3.frequency.setValueAtTime(36.0 * speed, startTime);
+        osc3.frequency.exponentialRampToValueAtTime(18.0, startTime + (0.9 / speed));
+
+        // Amplitude Envelope (Explosive Peak Gain of 4.5x)
+        const hitDuration = (1.0 / speed);
         hitGain.gain.setValueAtTime(0.001, startTime);
-        hitGain.gain.linearRampToValueAtTime(1.8, startTime + 0.02); // Extreme initial transient
+        hitGain.gain.linearRampToValueAtTime(4.5, startTime + 0.025); // Massive transient impact
         hitGain.gain.exponentialRampToValueAtTime(0.001, startTime + hitDuration);
 
-        osc.connect(hitGain);
-        subOsc.connect(hitGain);
-        hitGain.connect(lowPassFilter);
+        // Connect all 3 oscillators to envelope gain
+        osc1.connect(hitGain);
+        osc2.connect(hitGain);
+        osc3.connect(hitGain);
 
-        osc.start(startTime);
-        subOsc.start(startTime);
-        osc.stop(startTime + hitDuration);
-        subOsc.stop(startTime + hitDuration);
+        // Route into Bass Boost Filter
+        hitGain.connect(bassBoostFilter);
+
+        osc1.start(startTime);
+        osc2.start(startTime);
+        osc3.start(startTime);
+
+        osc1.stop(startTime + hitDuration);
+        osc2.stop(startTime + hitDuration);
+        osc3.stop(startTime + hitDuration);
       }
 
-      // First strike
+      // First heavy strike
       triggerSingleHit(now, 1.0);
 
-      // If double strike '쿵쿵'
+      // Second strike for double '쿵쿵'
       if (isDouble) {
-        const secondHitOffset = 0.38 / speed;
-        triggerSingleHit(now + secondHitOffset, 0.92);
+        const secondHitOffset = 0.35 / speed;
+        triggerSingleHit(now + secondHitOffset, 0.95);
       }
 
-      // UI Trigger Animations
+      // Visual shaking & woofer cone jump
       triggerVisualImpact(speed, isDouble);
     }
 
-    // Trigger visual feedback (flash, woofer cone bounce)
+    // Visual Screen Shake & Woofer Excursion
     function triggerVisualImpact(speed, isDouble) {
       const flash = document.getElementById('hit-flash');
       const cone = document.getElementById('sub-cone');
+      const body = document.getElementById('app-body');
       const speedLabel = document.getElementById('playback-rate-label');
       const typeLabel = document.getElementById('impact-type-label');
 
-      speedLabel.innerText = `${speed.toFixed(2)}x`;
-      typeLabel.innerText = isDouble ? '⚡ 2연타 타격 (쿵쿵)' : '💥 단발 타격 (쿵)';
+      speedLabel.innerText = `${speed.toFixed(2)}x (굉음)`;
+      typeLabel.innerText = isDouble ? '⚡ 2연타 굉음 타격 (쿵쿵)' : '💥 단발 굉음 폭격 (쿵)';
 
-      flash.style.opacity = '0.85';
-      cone.style.transform = 'scale(1.35)';
+      flash.style.opacity = '0.95';
+      cone.style.transform = 'scale(1.5)';
+      body.classList.add('animate-earthquake');
 
       setTimeout(() => {
         flash.style.opacity = '0';
         cone.style.transform = 'scale(1)';
-      }, 250);
+        body.classList.remove('animate-earthquake');
+      }, 300);
 
       if (isDouble) {
         setTimeout(() => {
-          flash.style.opacity = '0.6';
-          cone.style.transform = 'scale(1.25)';
+          flash.style.opacity = '0.85';
+          cone.style.transform = 'scale(1.4)';
+          body.classList.add('animate-earthquake');
           setTimeout(() => {
             flash.style.opacity = '0';
             cone.style.transform = 'scale(1)';
-          }, 200);
-        }, (380 / speed));
+            body.classList.remove('animate-earthquake');
+          }, 250);
+        }, (350 / speed));
       }
     }
 
@@ -437,16 +486,14 @@
     // Generate 10-Hour Random Schedule Plan
     function generate10HourSchedule() {
       schedulePlan = [];
-      const totalTargetSeconds = 10 * 3600; // 36,000 seconds (10 hours)
+      const totalTargetSeconds = 10 * 3600;
       let currentTime = 0;
 
       // Initial buffer silence before first hit (random 1~5 min)
       currentTime += Math.floor(Math.random() * (300 - 60 + 1)) + 60;
 
       while (currentTime < totalTargetSeconds) {
-        // Random speed: 0.5x ~ 1.8x
         const speed = parseFloat((Math.random() * (1.8 - 0.5) + 0.5).toFixed(2));
-        // Random single or double
         const isDouble = Math.random() > 0.5;
         const durationSec = isDouble ? (Math.random() * 0.4 + 1.6).toFixed(1) : (Math.random() * 0.4 + 1.0).toFixed(1);
         const typeStr = isDouble ? "2연타 '쿵쿵'" : "단발 '쿵'";
@@ -481,8 +528,8 @@
         div.className = "flex items-center justify-between p-1.5 rounded hover:bg-neutral-900/80 transition border-b border-neutral-900";
         div.innerHTML = `
           <div class="flex items-center space-x-2">
-            <span class="text-red-400 font-bold">${item.timestamp}</span>
-            <span class="text-gray-400 text-[11px]">${item.type}</span>
+            <span class="text-red-500 font-bold">${item.timestamp}</span>
+            <span class="text-gray-300 text-[11px]">${item.type}</span>
           </div>
           <div class="text-gray-500 text-[11px]">
             속도 ${item.speed} / 지속 ${item.duration}
@@ -491,7 +538,6 @@
         listContainer.appendChild(div);
       });
 
-      // Update Stats
       document.getElementById('stat-total-hits').innerText = `${schedulePlan.length}회`;
       const avgMin = ((10 * 60) / schedulePlan.length).toFixed(1);
       document.getElementById('stat-avg-interval').innerText = `약 ${avgMin}분`;
@@ -499,15 +545,15 @@
 
     // Generate YouTube Description
     function generateYouTubeDescription() {
-      let desc = `[도헌사운드 | DohunSound] 63Hz 이하 극저음 서브우퍼 극한 타격음 (10시간)\n\n`;
-      desc += `⚠️ 주의사항 (WARNING):\n`;
-      desc += `- 본 영상/오디오는 63Hz 이하의 서브우퍼 전용 극저음 신호만을 한계치까지 증폭(Hard Clipping & Overdrive)한 트랙입니다.\n`;
-      desc += `- 일반 스마트폰/노트북 스피커로는 소리가 들리지 않거나 찢어질 수 있으며, 우퍼 스피커나 저음 특화 헤드폰 청취를 권장합니다.\n`;
-      desc += `- 각 타격 시마다 0.5x ~ 1.8x 무작위 템포/피치 변조가 적용되어 불규칙하고 묵직한 진동을 발생시킵니다.\n`;
-      desc += `- 볼륨 설정에 각별히 유의하십시오. 장시간 높은 음량 재생 시 우퍼 유닛 과열 및 청각 손상의 위험이 있습니다.\n\n`;
+      let desc = `[도헌사운드 | DohunSound] 63Hz 이하 극저음 서브우퍼 극한 왜곡 굉음 폭격 (10시간)\n\n`;
+      desc += `⚠️ 극초대형 볼륨 주의사항 (EXTREME WARNING):\n`;
+      desc += `- 본 영상/오디오는 63Hz 이하 서브우퍼 전용 극저음 신호만을 한계치까지 증폭(3중 오실레이터 + Hard Clipping Overdrive + Bass Boost)한 트랙입니다.\n`;
+      desc += `- 일반 스피커나 저가 이어폰으로는 소리가 찢어질 수 있으며, 고출력 서브우퍼 시스템 청취에 최적화되어 있습니다.\n`;
+      desc += `- 볼륨 설정에 각별히 유의하십시오. 극단적인 게인 증폭으로 인해 우퍼 파손 위험이 있습니다.\n\n`;
       desc += `[오디오 사양 (Audio Specification)]\n`;
-      desc += `* 중심 주파수 대역: 20Hz ~ 63Hz (Sub-bass)\n`;
-      desc += `* 왜곡 및 필터: WaveShaper 4x 하드 오버드라이브 + 공진형 로우패스 필터\n`;
+      desc += `* 중심 주파수 대역: 18Hz ~ 63Hz Sub-bass\n`;
+      desc += `* 증폭 및 필터: Low-shelf +16dB Boost + WaveShaper Hard Clipping + Limiter\n`;
+      desc += `* 템포 모듈레이션: 0.5x ~ 1.8x 무작위 변동\n`;
       desc += `* 침묵 간격: 1분 ~ 20분 무작위 휴지기\n`;
       desc += `* 총 길이: 10시간 (10:00:00)\n\n`;
       desc += `========================================\n`;
@@ -534,12 +580,10 @@
       });
     });
 
-    // Schedule Re-roll button
     document.getElementById('btn-generate-schedule').addEventListener('click', () => {
       generate10HourSchedule();
     });
 
-    // Step Engine Runner
     function scheduleNextEvent() {
       if (!isPlaying || currentEventIndex >= schedulePlan.length) {
         if (currentEventIndex >= schedulePlan.length && isPlaying) {
@@ -555,11 +599,10 @@
 
       nextTargetEpoch = Date.now() + (waitDelaySec * 1000);
 
-      // Highlight current list item
       const itemEl = document.getElementById(`sched-item-${currentEventIndex}`);
       if (itemEl) {
         itemEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        itemEl.classList.add('bg-red-950/60', 'border-red-600');
+        itemEl.classList.add('bg-red-950', 'border-red-600');
       }
 
       nextScheduledTimeoutId = setTimeout(() => {
@@ -567,7 +610,7 @@
         playSubBassImpact(event.speedVal, event.isDouble);
 
         if (itemEl) {
-          itemEl.classList.remove('bg-red-950/60', 'border-red-600');
+          itemEl.classList.remove('bg-red-950', 'border-red-600');
           itemEl.classList.add('opacity-40');
         }
 
@@ -576,7 +619,6 @@
       }, waitDelaySec * 1000);
     }
 
-    // Start / Stop Engine
     function startEngine() {
       initAudioContext();
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -584,11 +626,7 @@
       isPlaying = true;
       currentEventIndex = 0;
       updateEngineUI(true);
-
-      // Start Countdown Timer
       startCountdown();
-
-      // Start scheduling chain
       scheduleNextEvent();
     }
 
@@ -604,20 +642,18 @@
       const btnText = document.getElementById('btn-play-text');
       const btn = document.getElementById('btn-toggle-engine');
       const badge = document.getElementById('dsp-badge');
-      const indicator = document.getElementById('dsp-indicator');
 
       if (running) {
-        btnText.innerText = '엔진 일시정지 (STOP)';
-        btn.classList.replace('from-red-600', 'from-neutral-700');
-        btn.classList.replace('to-red-700', 'to-neutral-800');
-        badge.className = 'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-950/80 text-red-400 border border-red-800 animate-pulse';
-        indicator.className = 'w-2 h-2 mr-1.5 rounded-full bg-red-500';
-        badge.innerHTML = `<span class="w-2 h-2 mr-1.5 rounded-full bg-red-500"></span> 10시간 재생 활성화 (ACTIVE)`;
+        btnText.innerText = '굉음 엔진 일시정지 (STOP)';
+        btn.classList.replace('from-red-600', 'from-neutral-800');
+        btn.classList.replace('to-orange-600', 'to-neutral-900');
+        badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-950 text-red-400 border border-red-800 animate-pulse';
+        badge.innerHTML = `<span class="w-2 h-2 mr-1.5 rounded-full bg-red-500"></span> 10시간 폭격 가동 중 (ACTIVE)`;
       } else {
-        btnText.innerText = '실시간 10시간 엔진 시작';
-        btn.classList.replace('from-neutral-700', 'from-red-600');
-        btn.classList.replace('to-neutral-800', 'to-red-700');
-        badge.className = 'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-800 text-gray-400 border border-gray-700';
+        btnText.innerText = '초특대 10시간 엔진 시작';
+        btn.classList.replace('from-neutral-800', 'from-red-600');
+        btn.classList.replace('to-neutral-900', 'to-orange-600');
+        badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-900 text-gray-400 border border-gray-800';
         badge.innerHTML = `<span class="w-2 h-2 mr-1.5 rounded-full bg-gray-500" id="dsp-indicator"></span> 대기 중 (IDLE)`;
       }
     }
@@ -639,13 +675,9 @@
       }, 500);
     }
 
-    // Toggle button event
     document.getElementById('btn-toggle-engine').addEventListener('click', () => {
-      if (isPlaying) {
-        stopEngine();
-      } else {
-        startEngine();
-      }
+      if (isPlaying) stopEngine();
+      else startEngine();
     });
 
     // Test Hit button (Instant trigger)
@@ -660,22 +692,31 @@
     document.getElementById('toggle-overdrive').addEventListener('change', (e) => {
       if (!waveShaper) return;
       if (e.target.checked) {
-        waveShaper.curve = makeDistortionCurve(65);
+        waveShaper.curve = makeUltraDistortionCurve(120);
       } else {
-        waveShaper.curve = null; // Clean bypass
+        waveShaper.curve = null;
       }
     });
 
-    // Gain Slider Listener
+    // Master Gain Slider (Up to 10.0x)
     document.getElementById('slider-gain').addEventListener('input', (e) => {
       const val = parseFloat(e.target.value);
-      document.getElementById('gain-val').innerText = `${val.toFixed(2)}x (+${((val-1)*6).toFixed(0)}dB)`;
+      document.getElementById('gain-val').innerText = `${val.toFixed(2)}x (+${((val-1)*3.5).toFixed(0)}dB ${val >= 7 ? '극악' : '극대화'})`;
       if (masterGain && audioCtx) {
         masterGain.gain.setValueAtTime(val, audioCtx.currentTime);
       }
     });
 
-    // Low-Pass Frequency Slider Listener
+    // Bass Boost Slider
+    document.getElementById('slider-bassboost').addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      document.getElementById('bassboost-val').innerText = `+${val} dB`;
+      if (bassBoostFilter && audioCtx) {
+        bassBoostFilter.gain.setValueAtTime(val, audioCtx.currentTime);
+      }
+    });
+
+    // Low-Pass Frequency Slider
     document.getElementById('slider-freq').addEventListener('input', (e) => {
       const val = parseFloat(e.target.value);
       document.getElementById('freq-val').innerText = `${val} Hz`;
@@ -703,19 +744,18 @@
         requestAnimationFrame(renderFrame);
         analyser.getByteFrequencyData(dataArray);
 
-        ctx.fillStyle = '#0a0a0e';
+        ctx.fillStyle = '#060609';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const barWidth = (canvas.width / 40);
         let x = 0;
 
-        // Draw Sub-Bass Focus Bars (First 35 bins focus on low-end)
         for (let i = 0; i < 40; i++) {
-          const barHeight = (dataArray[i] / 255) * canvas.height * 0.95;
+          const barHeight = (dataArray[i] / 255) * canvas.height * 0.98;
           const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
-          gradient.addColorStop(0, '#7f1d1d');
-          gradient.addColorStop(0.6, '#dc2626');
-          gradient.addColorStop(1, '#ff4d4d');
+          gradient.addColorStop(0, '#580c0c');
+          gradient.addColorStop(0.5, '#dc2626');
+          gradient.addColorStop(1, '#ff3b3b');
 
           ctx.fillStyle = gradient;
           ctx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
@@ -725,7 +765,6 @@
       renderFrame();
     }
 
-    // Initialize on load
     window.addEventListener('DOMContentLoaded', () => {
       generate10HourSchedule();
     });
