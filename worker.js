@@ -43,11 +43,12 @@ export default {
 function generateSchedule() {
   const schedule = [];
   const totalTargetSec = 10 * 3600; // 10 Hours
-  let currentSec = Math.floor(Math.random() * (300 - 60 + 1)) + 60; // Initial delay
+  let currentSec = Math.floor(Math.random() * (180 - 60 + 1)) + 60; // Initial delay 1~3 min
 
   while (currentSec < totalTargetSec) {
     const speed = parseFloat((Math.random() * (1.8 - 0.5) + 0.5).toFixed(2));
-    const isDouble = Math.random() > 0.5;
+    // 쿵쿵(2연타) 비중 25%, 단발 '쿵' 비중 75%
+    const isDouble = Math.random() < 0.25;
     const duration = isDouble ? (Math.random() * 0.4 + 1.6).toFixed(1) : (Math.random() * 0.4 + 1.0).toFixed(1);
 
     const h = Math.floor(currentSec / 3600);
@@ -63,12 +64,13 @@ function generateSchedule() {
       type: isDouble ? "2연타 '쿵쿵'" : "단발 '쿵'"
     });
 
-    const silence = Math.floor(Math.random() * (1200 - 60 + 1)) + 60; // 1 to 20 minutes
+    // 1분(60초) ~ 7분(420초) 무작위 간격
+    const silence = Math.floor(Math.random() * (420 - 60 + 1)) + 60;
     currentSec += silence + Math.ceil(parseFloat(duration));
   }
 
   return {
-    title: "도헌사운드 10시간 극저음 서브우퍼 타임스탬프",
+    title: "도헌사운드 10시간 극저음 서브우퍼 타임스탬프 (1분~7분 간격, 단발 75% / 2연타 25%)",
     totalDuration: "10:00:00",
     totalHits: schedule.length,
     events: schedule
