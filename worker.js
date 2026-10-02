@@ -25,7 +25,7 @@ export default {
       });
     }
 
-    // Delegate static assets (index.html, single.mp3, double.mp3) to Cloudflare Workers Assets
+    // Delegate static assets (index.html, single.mp3) to Cloudflare Workers Assets
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
     }
@@ -44,8 +44,7 @@ function generateSchedule() {
 
   while (currentSec < totalTargetSec) {
     const speed = parseFloat((Math.random() * (1.8 - 0.5) + 0.5).toFixed(2));
-    const isDouble = Math.random() < 0.25;
-    const duration = isDouble ? (Math.random() * 0.4 + 1.6).toFixed(1) : (Math.random() * 0.4 + 1.0).toFixed(1);
+    const duration = (Math.random() * 0.4 + 1.0).toFixed(1);
 
     const h = Math.floor(currentSec / 3600);
     const m = Math.floor((currentSec % 3600) / 60);
@@ -57,7 +56,7 @@ function generateSchedule() {
       timestamp,
       duration: `${duration}s`,
       speed: `${speed}x`,
-      type: isDouble ? "2연타 '쿵쿵'" : "단발 '쿵'"
+      type: "단발 '쿵'"
     });
 
     const silence = Math.floor(Math.random() * (420 - 60 + 1)) + 60;
@@ -65,7 +64,7 @@ function generateSchedule() {
   }
 
   return {
-    title: "도헌사운드 10시간 극저음 서브우퍼 타임스탬프 (1분~7분 간격, 단발 75% / 2연타 25%)",
+    title: "도헌사운드 10시간 극저음 서브우퍼 타임스탬프 (1분~7분 간격, 단발 '쿵')",
     totalDuration: "10:00:00",
     totalHits: schedule.length,
     events: schedule

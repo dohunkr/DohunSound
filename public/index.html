@@ -218,7 +218,7 @@
             <div class="bg-[#120a0a] p-3 rounded-xl border border-brand-border">
               <span class="text-xs text-gray-400 block mb-1">무음 휴지기 (Silence)</span>
               <span class="text-sm font-mono font-bold text-white">1분 ~ 7분 무작위</span>
-              <span class="text-[11px] text-gray-500 block mt-0.5">10시간 동안 쿵(75%)/쿵쿵(25%) 타격</span>
+              <span class="text-[11px] text-gray-500 block mt-0.5">10시간 동안 단발 쿵 타격</span>
             </div>
           </div>
         </div>
@@ -235,7 +235,7 @@
             <h2 class="text-lg font-bold text-white flex items-center gap-2">
               <span>📋</span> 10시간 타임스탬프 스케줄
             </h2>
-            <p class="text-xs text-gray-400">1분~7분 무작위 간격, 단발 '쿵' 위주(75%)</p>
+            <p class="text-xs text-gray-400">1분~7분 무작위 간격, 단발 '쿵'</p>
           </div>
           <button id="btn-generate-schedule" class="text-xs px-3 py-1.5 rounded-lg bg-red-950 hover:bg-red-900 text-red-200 border border-red-700 transition">
             스케줄 재추첨
@@ -367,46 +367,36 @@
       loadAudioSamples();
     }
 
-    // Audio Buffers for actual extracted 발망치 recordings
+    // Audio Buffer for single '쿵' recording
     let singleBuffer = null;
-    let doubleBuffer = null;
 
     async function loadAudioSamples() {
       if (!audioCtx) initAudioContext();
       try {
-        const [resSingle, resDouble] = await Promise.all([
-          fetch('/single.mp3'),
-          fetch('/double.mp3')
-        ]);
-        const [bufSingle, bufDouble] = await Promise.all([
-          resSingle.arrayBuffer(),
-          resDouble.arrayBuffer()
-        ]);
+        const resSingle = await fetch('/single.mp3');
+        const bufSingle = await resSingle.arrayBuffer();
         singleBuffer = await audioCtx.decodeAudioData(bufSingle);
-        doubleBuffer = await audioCtx.decodeAudioData(bufDouble);
-        console.log('Successfully loaded authentic 63Hz audio samples!');
+        console.log('Successfully loaded authentic 63Hz audio sample!');
       } catch (err) {
         console.warn('Fallback to procedural synthesis if sample load fails:', err);
       }
     }
 
-    // Play actual authentic footstep sound through the massive DSP bass chain
-    async function playSubBassImpact(speed = 1.0, isDouble = false) {
+    // Play single '쿵' sound through the massive DSP bass chain
+    async function playSubBassImpact(speed = 1.0) {
       if (!audioCtx) initAudioContext();
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
 
-      // If buffers not loaded yet, wait for them to load
-      if (!singleBuffer || !doubleBuffer) {
+      // If buffer not loaded yet, wait for it to load
+      if (!singleBuffer) {
         await loadAudioSamples();
       }
 
-      const bufferToPlay = isDouble ? doubleBuffer : singleBuffer;
-
-      if (bufferToPlay) {
+      if (singleBuffer) {
         const source = audioCtx.createBufferSource();
-        source.buffer = bufferToPlay;
+        source.buffer = singleBuffer;
         source.playbackRate.setValueAtTime(speed, audioCtx.currentTime);
 
         // Sample playback with natural clean punch (matches original video 100%)
@@ -418,11 +408,11 @@
         source.start();
       }
 
-      triggerVisualImpact(speed, isDouble);
+      triggerVisualImpact(speed);
     }
 
-    // Visual Screen Shake & Woofer Excursion
-    function triggerVisualImpact(speed, isDouble) {
+    // Visual Screen Shake & Woofer Excursion (단발 쿵 전용)
+    function triggerVisualImpact(speed) {
       const flash = document.getElementById('hit-flash');
       const cone = document.getElementById('sub-cone');
       const body = document.getElementById('app-body');
@@ -430,7 +420,7 @@
       const typeLabel = document.getElementById('impact-type-label');
 
       speedLabel.innerText = `${speed.toFixed(2)}x (굉음)`;
-      typeLabel.innerText = isDouble ? '⚡ 2연타 굉음 타격 (쿵쿵)' : '💥 단발 굉음 폭격 (쿵)';
+      typeLabel.innerText = '💥 단발 굉음 폭격 (쿵)';
 
       flash.style.opacity = '0.95';
       cone.style.transform = 'scale(1.5)';
@@ -441,19 +431,6 @@
         cone.style.transform = 'scale(1)';
         body.classList.remove('animate-earthquake');
       }, 300);
-
-      if (isDouble) {
-        setTimeout(() => {
-          flash.style.opacity = '0.85';
-          cone.style.transform = 'scale(1.4)';
-          body.classList.add('animate-earthquake');
-          setTimeout(() => {
-            flash.style.opacity = '0';
-            cone.style.transform = 'scale(1)';
-            body.classList.remove('animate-earthquake');
-          }, 250);
-        }, (350 / speed));
-      }
     }
 
     // Format Seconds to hh:mm:ss
@@ -464,7 +441,7 @@
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
-    // Generate 10-Hour Random Schedule Plan (1 to 7 min interval, 75% Single, 25% Double)
+    // Generate 10-Hour Random Schedule Plan (1 to 7 min interval, 단발 쿵 100%)
     function generate10HourSchedule() {
       schedulePlan = [];
       const totalTargetSeconds = 10 * 3600;
@@ -475,17 +452,15 @@
 
       while (currentTime < totalTargetSeconds) {
         const speed = parseFloat((Math.random() * (1.8 - 0.5) + 0.5).toFixed(2));
-        // 쿵쿵(Double) 비중을 25%로 줄이고, 단발 '쿵' 비중을 75%로 우세하게 분배
-        const isDouble = Math.random() < 0.25;
-        const durationSec = isDouble ? (Math.random() * 0.4 + 1.6).toFixed(1) : (Math.random() * 0.4 + 1.0).toFixed(1);
-        const typeStr = isDouble ? "2연타 '쿵쿵'" : "단발 '쿵'";
+        const durationSec = (Math.random() * 0.4 + 1.0).toFixed(1);
+        const typeStr = "단발 '쿵'";
 
         schedulePlan.push({
           timeSec: currentTime,
           timestamp: formatTime(currentTime),
           duration: `${durationSec}초`,
           speed: `${speed}x`,
-          isDouble: isDouble,
+          isDouble: false,
           speedVal: speed,
           type: typeStr
         });
@@ -536,7 +511,7 @@
       desc += `* 중심 주파수 대역: 18Hz ~ 63Hz Sub-bass\n`;
       desc += `* 증폭 및 필터: Low-shelf +16dB Boost + WaveShaper Hard Clipping + Limiter\n`;
       desc += `* 템포 모듈레이션: 0.5x ~ 1.8x 무작위 변동\n`;
-      desc += `* 침묵 간격: 1분 ~ 7분 불규칙 무작위 휴지기 (단발 쿵 75% / 2연타 쿵쿵 25% 황금비율 분배)\n`;
+      desc += `* 침묵 간격: 1분 ~ 7분 불규칙 무작위 휴지기 (단발 쿵 100%)\n`;
       desc += `* 총 길이: 10시간 (10:00:00)\n\n`;
       desc += `========================================\n`;
       desc += `[10시간 타임스탬프 목차 (Timestamps)]\n`;
@@ -589,7 +564,7 @@
 
       nextScheduledTimeoutId = setTimeout(() => {
         if (!isPlaying) return;
-        playSubBassImpact(event.speedVal, event.isDouble);
+        playSubBassImpact(event.speedVal);
 
         if (itemEl) {
           itemEl.classList.remove('bg-red-950', 'border-red-600');
@@ -662,12 +637,11 @@
       else startEngine();
     });
 
-    // Test Hit button (Instant trigger)
+    // Test Hit button (단발 쿵 즉시 트리거)
     document.getElementById('btn-test-hit').addEventListener('click', () => {
       initAudioContext();
       const randomSpeed = parseFloat((Math.random() * (1.8 - 0.5) + 0.5).toFixed(2));
-      const isDouble = Math.random() > 0.5;
-      playSubBassImpact(randomSpeed, isDouble);
+      playSubBassImpact(randomSpeed);
     });
 
     // Overdrive Toggle Listener
