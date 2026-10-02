@@ -179,23 +179,6 @@
             </div>
           </div>
 
-          <!-- Rumble Tail (우아아앙 진동 잔향) -->
-          <div class="p-3.5 bg-[#170909] rounded-xl border border-red-900/50">
-            <div class="flex justify-between text-sm mb-1.5 font-bold">
-              <span class="text-white flex items-center gap-1.5">
-                <span>🫨</span> 63Hz 우아아앙 진동 잔향 (Rumble Tail)
-              </span>
-              <span id="rumble-val" class="font-mono text-red-400 font-black text-base">70%</span>
-            </div>
-            <input type="range" id="slider-rumble" min="0" max="100" step="1" value="70" 
-                   class="w-full h-3 bg-neutral-900 rounded-lg appearance-none cursor-pointer accent-red-600">
-            <div class="flex justify-between text-[11px] text-gray-400 mt-1 font-mono">
-              <span>0% (쿵만)</span>
-              <span class="text-yellow-400 font-bold">70% (기본 진동)</span>
-              <span class="text-red-500 font-black">100% (최대 우아아앙)</span>
-            </div>
-          </div>
-
           <!-- Overdrive Toggle -->
           <div class="flex items-center justify-between p-3.5 rounded-xl bg-[#120a0a] border border-brand-border">
             <div>
@@ -399,63 +382,7 @@
       }
     }
 
-    // 63Hz 우아아앙 진동 잔향 (쿵 뒤에 깔리는 저음 울림)
-    function playRumbleTail(baseFreq = 63, durationSec = 2.2) {
-      if (!audioCtx || !bassBoostFilter) return;
-      const slider = document.getElementById('slider-rumble');
-      const rumbleAmt = slider ? (parseFloat(slider.value) / 100) : 0.7;
-      if (rumbleAmt <= 0.01) return;
-
-      const t0 = audioCtx.currentTime;
-
-      const rumbleGain = audioCtx.createGain();
-      rumbleGain.gain.setValueAtTime(0.0001, t0);
-      rumbleGain.gain.exponentialRampToValueAtTime(Math.max(0.0011, 0.9 * rumbleAmt), t0 + 0.03);
-      rumbleGain.gain.exponentialRampToValueAtTime(0.0001, t0 + durationSec);
-
-      const osc1 = audioCtx.createOscillator();
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(baseFreq, t0);
-      osc1.frequency.exponentialRampToValueAtTime(Math.max(30, baseFreq * 0.82), t0 + durationSec);
-
-      const osc2 = audioCtx.createOscillator();
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(baseFreq / 2, t0);
-      osc2.frequency.exponentialRampToValueAtTime(Math.max(20, (baseFreq / 2) * 0.82), t0 + durationSec);
-      const osc2Gain = audioCtx.createGain();
-      osc2Gain.gain.setValueAtTime(0.5, t0);
-
-      // 우아아앙 떨림용 LFO (6.5Hz 비브라토 + 트레몰로)
-      const lfo = audioCtx.createOscillator();
-      lfo.type = 'sine';
-      lfo.frequency.setValueAtTime(6.5, t0);
-      const lfoFreqDepth = audioCtx.createGain();
-      lfoFreqDepth.gain.setValueAtTime(2.8, t0);
-      lfo.connect(lfoFreqDepth);
-      lfoFreqDepth.connect(osc1.frequency);
-      lfoFreqDepth.connect(osc2.frequency);
-
-      const tremScale = audioCtx.createGain();
-      tremScale.gain.setValueAtTime(0.18 * rumbleAmt, t0);
-      lfo.connect(tremScale);
-      tremScale.connect(rumbleGain.gain);
-
-      osc1.connect(rumbleGain);
-      osc2.connect(osc2Gain);
-      osc2Gain.connect(rumbleGain);
-      // 오버드라이브 체인으로 보내서 63Hz 극저음 왜곡을 함께 먹임
-      rumbleGain.connect(bassBoostFilter);
-
-      osc1.start(t0);
-      osc2.start(t0);
-      lfo.start(t0);
-      const tEnd = t0 + durationSec + 0.05;
-      osc1.stop(tEnd);
-      osc2.stop(tEnd);
-      lfo.stop(tEnd);
-    }
-
-    // Play single '쿵' sound through the massive DSP bass chain + rumble tail
+    // Play single '쿵' sound through the massive DSP bass chain
     async function playSubBassImpact(speed = 1.0) {
       if (!audioCtx) initAudioContext();
       if (audioCtx.state === 'suspended') {
@@ -477,19 +404,14 @@
         sampleGain.gain.setValueAtTime(1.8, audioCtx.currentTime);
 
         source.connect(sampleGain);
-        // 63Hz 오버드라이브 체인을 타도록 bassBoostFilter로 라우팅 (기존 masterGain 직결 버그 수정)
-        sampleGain.connect(bassBoostFilter);
+        sampleGain.connect(masterGain);
         source.start();
       }
-
-      // 쿵 뒤에 우아아앙 진동을 깔아줌 (속도가 빠르면 잔향은 살짝 짧게)
-      const tailSec = Math.max(1.4, 2.4 - speed * 0.4);
-      playRumbleTail(63, tailSec);
 
       triggerVisualImpact(speed);
     }
 
-    // Visual Screen Shake & Woofer Excursion (단발 쿵 + 우아아앙 진동)
+    // Visual Screen Shake & Woofer Excursion (단발 쿵 전용)
     function triggerVisualImpact(speed) {
       const flash = document.getElementById('hit-flash');
       const cone = document.getElementById('sub-cone');
@@ -498,24 +420,17 @@
       const typeLabel = document.getElementById('impact-type-label');
 
       speedLabel.innerText = `${speed.toFixed(2)}x (굉음)`;
-      typeLabel.innerText = '💥 단발 굉음 폭격 (쿵 + 우아아앙)';
+      typeLabel.innerText = '💥 단발 굉음 폭격 (쿵)';
 
-      // 1차 강타
       flash.style.opacity = '0.95';
       cone.style.transform = 'scale(1.5)';
       body.classList.add('animate-earthquake');
-
-      // 잔향 진동 동안 화면·우퍼를 길게 떨리게 유지 (약 1.1초)
-      setTimeout(() => {
-        flash.style.opacity = '0.25';
-        cone.style.transform = 'scale(1.25)';
-      }, 300);
 
       setTimeout(() => {
         flash.style.opacity = '0';
         cone.style.transform = 'scale(1)';
         body.classList.remove('animate-earthquake');
-      }, 1100);
+      }, 300);
     }
 
     // Format Seconds to hh:mm:ss
@@ -593,8 +508,8 @@
       desc += `- 일반 스피커나 저가 이어폰으로는 소리가 찢어질 수 있으며, 고출력 서브우퍼 시스템 청취에 최적화되어 있습니다.\n`;
       desc += `- 볼륨 설정에 각별히 유의하십시오. 극단적인 게인 증폭으로 인해 우퍼 파손 위험이 있습니다.\n\n`;
       desc += `[오디오 사양 (Audio Specification)]\n`;
-      desc += `* 중심 주파수 대역: 18Hz ~ 63Hz Sub-bass + 63Hz 우아아앙 진동 잔향 (2.2초 Rumble Tail)\n`;
-      desc += `* 증폭 및 필터: Low-shelf +16dB Boost + WaveShaper Hard Clipping + Limiter (쿵+럼블 전체 오버드라이브 체인)\n`;
+      desc += `* 중심 주파수 대역: 18Hz ~ 63Hz Sub-bass\n`;
+      desc += `* 증폭 및 필터: Low-shelf +16dB Boost + WaveShaper Hard Clipping + Limiter\n`;
       desc += `* 템포 모듈레이션: 0.5x ~ 1.8x 무작위 변동\n`;
       desc += `* 침묵 간격: 1분 ~ 7분 불규칙 무작위 휴지기 (단발 쿵 100%)\n`;
       desc += `* 총 길이: 10시간 (10:00:00)\n\n`;
@@ -755,12 +670,6 @@
       if (bassBoostFilter && audioCtx) {
         bassBoostFilter.gain.setValueAtTime(val, audioCtx.currentTime);
       }
-    });
-
-    // Rumble Tail Slider (우아아앙 진동량)
-    document.getElementById('slider-rumble').addEventListener('input', (e) => {
-      const val = parseFloat(e.target.value);
-      document.getElementById('rumble-val').innerText = `${val}%`;
     });
 
     // Low-Pass Frequency Slider
