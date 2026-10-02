@@ -391,40 +391,30 @@
     }
 
     // Play actual authentic footstep sound through the massive DSP bass chain
-    function playSubBassImpact(speed = 1.0, isDouble = false) {
+    async function playSubBassImpact(speed = 1.0, isDouble = false) {
       if (!audioCtx) initAudioContext();
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
 
+      // If buffers not loaded yet, wait for them to load
+      if (!singleBuffer || !doubleBuffer) {
+        await loadAudioSamples();
+      }
+
       const bufferToPlay = isDouble ? doubleBuffer : singleBuffer;
 
       if (bufferToPlay) {
-        // High fidelity sample playback through DSP chain
         const source = audioCtx.createBufferSource();
         source.buffer = bufferToPlay;
         source.playbackRate.setValueAtTime(speed, audioCtx.currentTime);
 
         const sampleGain = audioCtx.createGain();
-        sampleGain.gain.setValueAtTime(2.8, audioCtx.currentTime); // Massive boost
+        sampleGain.gain.setValueAtTime(2.8, audioCtx.currentTime);
 
         source.connect(sampleGain);
         sampleGain.connect(bassBoostFilter);
         source.start();
-      } else {
-        // Fallback procedural thud
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(62 * speed, now);
-        osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
-        gain.gain.setValueAtTime(3.0, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-        osc.connect(gain);
-        gain.connect(bassBoostFilter);
-        osc.start(now);
-        osc.stop(now + 0.4);
       }
 
       triggerVisualImpact(speed, isDouble);
