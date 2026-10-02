@@ -364,90 +364,67 @@
       analyser.connect(audioCtx.destination);
 
       startVisualizer();
+      loadAudioSamples();
     }
 
-    // Authentic Concrete Floor/Ceiling Footstep Thud ('발망치 쿵·쿵쿵') Synthesizer
-    // Accurately models 63Hz concrete slab structure-borne vibration:
-    // 1. Initial Heel Impact: Hard heel transient (퍽/딱)
-    // 2. Structural Resonance: 50~63Hz massive building slab resonance (쿵!)
-    // 3. Sub-Rumble Decay: 30~40Hz heavy dissipation shake without sustained drone
+    // Audio Buffers for actual extracted 발망치 recordings
+    let singleBuffer = null;
+    let doubleBuffer = null;
+
+    async function loadAudioSamples() {
+      if (!audioCtx) initAudioContext();
+      try {
+        const [resSingle, resDouble] = await Promise.all([
+          fetch('/single.mp3'),
+          fetch('/double.mp3')
+        ]);
+        const [bufSingle, bufDouble] = await Promise.all([
+          resSingle.arrayBuffer(),
+          resDouble.arrayBuffer()
+        ]);
+        singleBuffer = await audioCtx.decodeAudioData(bufSingle);
+        doubleBuffer = await audioCtx.decodeAudioData(bufDouble);
+        console.log('Successfully loaded authentic 63Hz audio samples!');
+      } catch (err) {
+        console.warn('Fallback to procedural synthesis if sample load fails:', err);
+      }
+    }
+
+    // Play actual authentic footstep sound through the massive DSP bass chain
     function playSubBassImpact(speed = 1.0, isDouble = false) {
       if (!audioCtx) initAudioContext();
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
 
-      const now = audioCtx.currentTime;
+      const bufferToPlay = isDouble ? doubleBuffer : singleBuffer;
 
-      function triggerSingleHit(startTime, strikeIndex = 0) {
-        // Heel Strike Transient (바닥을 뒤꿈치로 내려찍는 순간적인 '퍽' 소리)
-        const snapOsc = audioCtx.createOscillator();
-        const snapGain = audioCtx.createGain();
-        snapOsc.type = 'triangle';
-        snapOsc.frequency.setValueAtTime(110 * speed, startTime);
-        snapOsc.frequency.exponentialRampToValueAtTime(45, startTime + 0.035);
+      if (bufferToPlay) {
+        // High fidelity sample playback through DSP chain
+        const source = audioCtx.createBufferSource();
+        source.buffer = bufferToPlay;
+        source.playbackRate.setValueAtTime(speed, audioCtx.currentTime);
 
-        snapGain.gain.setValueAtTime(0, startTime);
-        snapGain.gain.linearRampToValueAtTime(1.8, startTime + 0.003);
-        snapGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.04);
+        const sampleGain = audioCtx.createGain();
+        sampleGain.gain.setValueAtTime(2.8, audioCtx.currentTime); // Massive boost
 
-        snapOsc.connect(snapGain);
-        snapGain.connect(bassBoostFilter);
-        snapOsc.start(startTime);
-        snapOsc.stop(startTime + 0.05);
-
-        // Main 63Hz Slab Thud Oscillator (슬래브를 울리는 묵직한 '쿵')
-        // Starts around 75Hz and immediately drops to 52~58Hz
-        const mainOsc = audioCtx.createOscillator();
-        const mainGain = audioCtx.createGain();
-
-        // 35Hz Sub-Floor Vibration (골조를 타고 울리는 진동)
-        const subOsc = audioCtx.createOscillator();
-        const subGain = audioCtx.createGain();
-
-        const baseHz = (strikeIndex === 0) ? (58 * speed) : (53 * speed);
-        const thudDuration = 0.32 / speed;
-        const subDuration = 0.45 / speed;
-
-        mainOsc.type = 'sine';
-        mainOsc.frequency.setValueAtTime(baseHz * 1.5, startTime); // Initial impact pitch
-        mainOsc.frequency.exponentialRampToValueAtTime(baseHz, startTime + 0.03); // Quick settlement
-        mainOsc.frequency.exponentialRampToValueAtTime(32, startTime + thudDuration);
-
-        // Attack & Decay Envelope for '쿵'
-        mainGain.gain.setValueAtTime(0, startTime);
-        mainGain.gain.linearRampToValueAtTime(3.8, startTime + 0.008); // Sharp punch attack
-        mainGain.gain.exponentialRampToValueAtTime(0.001, startTime + thudDuration);
-
-        // Sub Rumble
-        subOsc.type = 'sine';
-        subOsc.frequency.setValueAtTime(baseHz * 0.72, startTime);
-        subOsc.frequency.exponentialRampToValueAtTime(24, startTime + subDuration);
-
-        subGain.gain.setValueAtTime(0, startTime);
-        subGain.gain.linearRampToValueAtTime(2.6, startTime + 0.015);
-        subGain.gain.exponentialRampToValueAtTime(0.001, startTime + subDuration);
-
-        mainOsc.connect(mainGain);
-        subOsc.connect(subGain);
-
-        mainGain.connect(bassBoostFilter);
-        subGain.connect(bassBoostFilter);
-
-        mainOsc.start(startTime);
-        subOsc.start(startTime);
-
-        mainOsc.stop(startTime + thudDuration + 0.05);
-        subOsc.stop(startTime + subDuration + 0.05);
-      }
-
-      // First heavy thud '쿵'
-      triggerSingleHit(now, 0);
-
-      // Realistic 2nd step thud '쿵쿵' (발소리 걷는 0.28초 템포)
-      if (isDouble) {
-        const stepOffset = 0.28 / speed;
-        triggerSingleHit(now + stepOffset, 1);
+        source.connect(sampleGain);
+        sampleGain.connect(bassBoostFilter);
+        source.start();
+      } else {
+        // Fallback procedural thud
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(62 * speed, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
+        gain.gain.setValueAtTime(3.0, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.connect(gain);
+        gain.connect(bassBoostFilter);
+        osc.start(now);
+        osc.stop(now + 0.4);
       }
 
       triggerVisualImpact(speed, isDouble);
@@ -782,6 +759,11 @@
     window.addEventListener('DOMContentLoaded', () => {
       generate10HourSchedule();
     });
+
+    // Also preload samples on first user gesture
+    window.addEventListener('click', () => {
+      if (!singleBuffer) loadAudioSamples();
+    }, { once: true });
   </script>
 </body>
 </html>
