@@ -1,0 +1,23 @@
+{
+  "name": "dohunsound",
+  "version": "1.0.0",
+  "description": "도헌사운드 - 63Hz 이하 서브우퍼 극한 증폭 & 10시간 무작위 스케줄러",
+  "main": "worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "pages:deploy": "wrangler pages deploy ."
+  },
+  "keywords": [
+    "dsp",
+    "web-audio-api",
+    "subwoofer",
+    "overdrive",
+    "cloudflare-workers"
+  ],
+  "author": "DohunSound",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
