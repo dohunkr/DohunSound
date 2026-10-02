@@ -90,7 +90,7 @@
         🔊 쿵 10시간 (단발 스케줄)
       </button>
       <button id="tab-tv" class="flex-1 py-3 px-4 rounded-xl font-black text-sm bg-[#1c0808] text-red-200/70 border border-red-900 transition active:scale-[0.98] hover:bg-[#2b1010]">
-        📺 TV 10시간 (63Hz 오버드라이브)
+        📺 TV 10시간 (원음 크게)
       </button>
     </div>
 
@@ -302,7 +302,7 @@
     </div>
     </div><!-- /view-kung -->
 
-    <!-- TV View (순차 이어틀기 + 63Hz 오버드라이브) -->
+    <!-- TV View (순차 이어틀기, 원음 크게) -->
     <div id="view-tv" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
 
       <!-- Left Column: TV Controls & Status (7 Cols) -->
@@ -312,9 +312,9 @@
           <div class="flex justify-between items-center mb-4">
             <div>
               <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                <span class="text-red-500">📺</span> TV 63Hz 오버드라이브 엔진
+                <span class="text-red-500">📺</span> TV 엔진 (원음 그대로 크게)
               </h2>
-              <p class="text-xs text-gray-400">5개 음원 순차 이어틀기 + 반복으로 10시간 (32kbps 스트리밍 → 63Hz 체인)</p>
+              <p class="text-xs text-gray-400">5개 음원 순차 이어틀기 + 반복으로 10시간 (리미터로 손상없이 증폭)</p>
             </div>
             <div class="text-right">
               <span class="text-xs text-gray-400">TV 엔진 상태</span>
@@ -345,7 +345,7 @@
               <span>📺</span> TV 랜덤 맛보기
             </button>
           </div>
-          <p class="text-[11px] text-gray-500 mt-3">※ TV 소리는 베이스 부스트 + 63Hz 로우패스 + 오버드라이브 + 리미터 체인을 통과합니다. (쿵은 깨끗한 원음 그대로)</p>
+          <p class="text-[11px] text-gray-500 mt-3">※ TV 소리는 원음 그대로 리미터만 통과해서 찢어짐 없이 크게 나옵니다.</p>
         </div>
       </div>
 
@@ -845,7 +845,7 @@
       if (!singleBuffer) loadAudioSamples();
     }, { once: true });
 
-    // ================= TV Engine (순차 이어틀기 + 63Hz 오버드라이브 체인) =================
+    // ================= TV Engine (순차 이어틀기, 원음 + 리미터) =================
     const TV_TOTAL_SEC = 10 * 3600;
     let tvChunks = [];
     let tvPlaylist = [];
@@ -867,9 +867,9 @@
       if (audioCtx.state === 'suspended') audioCtx.resume();
       if (!tvGain) {
         tvGain = audioCtx.createGain();
-        tvGain.gain.setValueAtTime(1.0, audioCtx.currentTime);
-        // TV는 63Hz 오버드라이브 체인(베이스부스트→로우패스→웨이브셰이퍼→리미터)을 통과
-        tvGain.connect(bassBoostFilter);
+        tvGain.gain.setValueAtTime(2.0, audioCtx.currentTime);
+        // TV는 깨끗한 원음 그대로: 리미터(컴프레서)만 통과해서 손상없이 크게
+        tvGain.connect(dynamicsCompressor);
       }
       for (let k = 0; k < 2; k++) {
         if (!tvEl[k]) {
@@ -936,10 +936,10 @@
     }
 
     function generateTvDescription() {
-      let desc = `[도헌사운드 | DohunSound] TV 사운드 63Hz 오버드라이브 10시간 순차 이어틀기\n\n`;
+      let desc = `[도헌사운드 | DohunSound] TV 사운드 10시간 순차 이어틀기 (원음 크게)\n\n`;
       desc += `[오디오 사양 (Audio Specification)]\n`;
       desc += `* 소스: TV 음원 5개 (32kbps mono 스트리밍) 순차 재생 + 1회차 종료 후 처음부터 반복\n`;
-      desc += `* 체인: Low-shelf Bass Boost + 63Hz Lowpass + WaveShaper Overdrive + Limiter\n`;
+      desc += `* 처리: 원음 그대로 + 리미터로 손상없이 증폭 (왜곡 없음)\n`;
       desc += `* 총 길이: 10시간 (10:00:00)\n\n`;
       desc += `========================================\n`;
       desc += `[10시간 타임스탬프 목차 (Timestamps)]\n`;
@@ -981,7 +981,7 @@
       if (running) {
         badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-950 text-red-400 border border-red-800 animate-pulse';
         badge.innerHTML = `<span class="w-2 h-2 mr-1.5 rounded-full bg-red-500"></span> TV 가동 중`;
-        label.innerText = '재생 중 (63Hz OD)';
+        label.innerText = '재생 중';
         label.className = 'text-base font-mono font-black text-red-400 animate-pulse';
         btnText.innerText = 'TV 엔진 정지 (STOP)';
       } else {
