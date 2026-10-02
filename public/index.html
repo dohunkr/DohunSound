@@ -302,16 +302,15 @@
     let countdownInterval = null;
     let nextTargetEpoch = 0;
 
-    // Hard Clipping & WaveShaping Curve
-    function makeUltraDistortionCurve(amount = 120) {
-      const k = typeof amount === 'number' ? amount : 120;
+    // Hard Clipping & WaveShaping Curve - Tuned for punchy kick saturation without metallic buzzing
+    function makeUltraDistortionCurve(amount = 25) {
+      const k = typeof amount === 'number' ? amount : 25;
       const n_samples = 44100;
       const curve = new Float32Array(n_samples);
-      const deg = Math.PI / 180;
       for (let i = 0; i < n_samples; ++i) {
         let x = (i * 2) / n_samples - 1;
-        // Hard-knee overdrive formula: boosts quiet body and brickwall-clips transient peaks
-        curve[i] = ((3 + k) * x * 25 * deg) / (Math.PI + k * Math.abs(x));
+        // Clean soft-to-hard saturation curve for deep kick punch
+        curve[i] = Math.tanh(x * (1 + k / 10));
       }
       return curve;
     }
@@ -322,21 +321,21 @@
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       audioCtx = new AudioContextClass();
 
-      // 1. Low Shelf Bass Booster Filter (+16dB at 50Hz)
+      // 1. Low Shelf Bass Booster Filter (+14dB at 55Hz)
       bassBoostFilter = audioCtx.createBiquadFilter();
       bassBoostFilter.type = 'lowshelf';
       bassBoostFilter.frequency.setValueAtTime(55, audioCtx.currentTime);
       bassBoostFilter.gain.setValueAtTime(parseFloat(document.getElementById('slider-bassboost').value), audioCtx.currentTime);
 
-      // 2. Strict Sub 63Hz Low Pass Filter with high resonance
+      // 2. Strict Sub 63Hz Low Pass Filter (Clean low thump, Q=2.0)
       lowPassFilter = audioCtx.createBiquadFilter();
       lowPassFilter.type = 'lowpass';
       lowPassFilter.frequency.setValueAtTime(parseFloat(document.getElementById('slider-freq').value), audioCtx.currentTime);
-      lowPassFilter.Q.setValueAtTime(6.0, audioCtx.currentTime); // Resonance peak boost
+      lowPassFilter.Q.setValueAtTime(2.0, audioCtx.currentTime);
 
-      // 3. Extreme WaveShaper Distortion (Amount: 120)
+      // 3. Punchy WaveShaper Distortion (Amount: 25)
       waveShaper = audioCtx.createWaveShaper();
-      waveShaper.curve = makeUltraDistortionCurve(120);
+      waveShaper.curve = makeUltraDistortionCurve(25);
       waveShaper.oversample = '4x';
 
       // 4. Dynamics Compressor as Brickwall Limiter to pump maximum power without NaN crash
@@ -367,7 +366,8 @@
       startVisualizer();
     }
 
-    // Procedural Synthesizer: 3-Layer Heavy Sub-Bass Generator
+    // Procedural Synthesizer: Realistic Heavy Thud Punch '쿵' & '쿵쿵' Engine
+    // Eliminates sustained droning ('와아아앙') and delivers immediate physical bass impact ('쿵!')
     function playSubBassImpact(speed = 1.0, isDouble = false) {
       if (!audioCtx) initAudioContext();
       if (audioCtx.state === 'suspended') {
@@ -376,64 +376,85 @@
 
       const now = audioCtx.currentTime;
 
-      function triggerSingleHit(startTime, pitchMultiplier = 1.0) {
-        // Oscillator 1: Primary Heavy Sine Sweep (62Hz -> 28Hz)
-        const osc1 = audioCtx.createOscillator();
-        // Oscillator 2: Sub-Harmonic Triangle for massive body rumble
-        const osc2 = audioCtx.createOscillator();
-        // Oscillator 3: Ultra-Low Sine (35Hz -> 18Hz) for chest-thumping vibration
-        const osc3 = audioCtx.createOscillator();
+      function triggerSingleHit(startTime, isSecondStrike = false) {
+        // 1. Initial Transient Click/Beater (나무/단단한 타격감: '딱!')
+        // White noise transient for 0.015s
+        const bufferSize = audioCtx.sampleRate * 0.02;
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
+        const whiteNoise = audioCtx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
 
+        const noiseFilter = audioCtx.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.setValueAtTime(60, startTime);
+        noiseFilter.Q.setValueAtTime(3.0, startTime);
+
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.setValueAtTime(1.5, startTime);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.025);
+
+        whiteNoise.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(lowPassFilter);
+        whiteNoise.start(startTime);
+
+        // 2. Primary Deep Punch Oscillator (쿵의 강력한 피치 하강: 130Hz -> 48Hz in 0.04s)
+        const osc = audioCtx.createOscillator();
         const hitGain = audioCtx.createGain();
 
-        const startPitch = Math.min(62.5, 61.0 * speed * pitchMultiplier);
-        const endPitch = 25.0 * speed;
+        // 3. Sub-Rumble Body Oscillator (서브우퍼를 털어주는 42Hz 진동 잔향)
+        const subOsc = audioCtx.createOscillator();
+        const subGain = audioCtx.createGain();
 
-        // Osc 1
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(startPitch, startTime);
-        osc1.frequency.exponentialRampToValueAtTime(endPitch, startTime + (0.7 / speed));
+        const basePitch = isSecondStrike ? 58 : 62;
+        const decayTime = (0.28 / speed); // Quick punchy decay to prevent '와아앙' droning
+        const subDecayTime = (0.38 / speed);
 
-        // Osc 2 (Triangle)
-        osc2.type = 'triangle';
-        osc2.frequency.setValueAtTime(startPitch * 0.85, startTime);
-        osc2.frequency.exponentialRampToValueAtTime(20.0, startTime + (0.8 / speed));
+        // Pitch Drop Envelope (쿵! 하는 묵직한 하강 어택)
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(basePitch * 2.2, startTime); // 136Hz transient drop
+        osc.frequency.exponentialRampToValueAtTime(basePitch, startTime + 0.045);
+        osc.frequency.exponentialRampToValueAtTime(32, startTime + decayTime);
 
-        // Osc 3 (Deep Sub Sine)
-        osc3.type = 'sine';
-        osc3.frequency.setValueAtTime(36.0 * speed, startTime);
-        osc3.frequency.exponentialRampToValueAtTime(18.0, startTime + (0.9 / speed));
+        // Main Punch Gain Envelope (초고속 어택 + 깔끔한 지수 감쇠)
+        hitGain.gain.setValueAtTime(0.0, startTime);
+        hitGain.gain.linearRampToValueAtTime(3.5, startTime + 0.005); // 즉각적인 타격 피크
+        hitGain.gain.exponentialRampToValueAtTime(0.001, startTime + decayTime);
 
-        // Amplitude Envelope (Explosive Peak Gain of 4.5x)
-        const hitDuration = (1.0 / speed);
-        hitGain.gain.setValueAtTime(0.001, startTime);
-        hitGain.gain.linearRampToValueAtTime(4.5, startTime + 0.025); // Massive transient impact
-        hitGain.gain.exponentialRampToValueAtTime(0.001, startTime + hitDuration);
+        // Sub Body (서브우퍼 쿵 울림)
+        subOsc.type = 'sine';
+        subOsc.frequency.setValueAtTime(basePitch * 0.9, startTime);
+        subOsc.frequency.exponentialRampToValueAtTime(26, startTime + subDecayTime);
 
-        // Connect all 3 oscillators to envelope gain
-        osc1.connect(hitGain);
-        osc2.connect(hitGain);
-        osc3.connect(hitGain);
+        subGain.gain.setValueAtTime(0.0, startTime);
+        subGain.gain.linearRampToValueAtTime(2.2, startTime + 0.01);
+        subGain.gain.exponentialRampToValueAtTime(0.001, startTime + subDecayTime);
 
-        // Route into Bass Boost Filter
-        hitGain.connect(bassBoostFilter);
+        osc.connect(hitGain);
+        subOsc.connect(subGain);
 
-        osc1.start(startTime);
-        osc2.start(startTime);
-        osc3.start(startTime);
+        hitGain.connect(lowPassFilter);
+        subGain.connect(lowPassFilter);
 
-        osc1.stop(startTime + hitDuration);
-        osc2.stop(startTime + hitDuration);
-        osc3.stop(startTime + hitDuration);
+        osc.start(startTime);
+        subOsc.start(startTime);
+
+        osc.stop(startTime + decayTime + 0.05);
+        subOsc.stop(startTime + subDecayTime + 0.05);
       }
 
-      // First heavy strike
-      triggerSingleHit(now, 1.0);
+      // First clean, heavy '쿵'
+      triggerSingleHit(now, false);
 
-      // Second strike for double '쿵쿵'
+      // Second '쿵' for realistic double hit '쿵쿵'
       if (isDouble) {
-        const secondHitOffset = 0.35 / speed;
-        triggerSingleHit(now + secondHitOffset, 0.95);
+        // 0.22초 뒤 정확하고 단단하게 들어오는 두 번째 '쿵'
+        const secondHitOffset = (0.22 / speed);
+        triggerSingleHit(now + secondHitOffset, true);
       }
 
       // Visual shaking & woofer cone jump
